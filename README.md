@@ -8,7 +8,7 @@ Quicktip:
 - update your branch from master `git checkout dev/[imie]` then `git merge master`
 - apply your work to master `git checkout master` then `git merge dev/[imie]`
 - sync from remote repository `git checkout master[OR]dev/[imie]` then `git pull origin <CURRENT-BRANCH>`
-- sync to remote repository `git checkout master[OR]dev/[imie]` then `git push origin <CURRENT-BRANCH>`
+- sync to remote repository `git push origin <BRANCH-TO-SYNC>`
 
 Ogólne zasady, konwencje:
 - repozytorium (repo) - projekt przechowywany w folderze, gdzie znajduje się folder ukryty `.git`;
@@ -29,7 +29,7 @@ Polecenia:
 - `git merge [branch]` - pobierz zmiany z innego branch do aktualnego; staramy się wymieniać tylko z `master`, czyli do master lub od master do siebie;
 - `git log` - historia commitów;
 - `git pull origin <branch>` - pobierz zdalne zmiany z branch; **UWAGA:** trzeba się upewnić, że pobieramy ten sam branch, na którym jesteśmy, w innym przypadku zaktualizujemy aktualny o zmiany z innego i trudno to cofnąć, postępujemy świadomie;
-- `git push origin <branch>` - wyślij zmiany na zdalne repo z branch; **UWAGA:** jak wyżej;
+- `git push origin <branch>` - zaktualizuj branch na githubie; nie powinno zależeć od aktualnego brancha;
 
 > Wszystkie polecenia wykonujemy w folderze projektu!
 
