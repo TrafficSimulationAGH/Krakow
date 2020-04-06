@@ -22,6 +22,27 @@
 	\section{Definicja problemu}
 	TODO: co trzeba zrobić, co symulujemy, co chcemy uzyskać
 	
+	W celu rozwiązania zadanego problemu należy oprzeć badania na odpowiednim modelu, który to pozwoli nam zasymulować ruch drogowy. Bardzo dobrym przykładem takiego szablonu jest model Nagela-Schreckenberga, który to zdecydowaliśmy się wykorzystać.
+	
+	Model Nagela-Schreckenberga to teorytyczny model mikroskopowy o charakterze dyskretnym, w którym droga podzielona jest na komórki. Każda z komórek interpretowana jest na jeden z dwóch sposobów:
+	\begin{itemize}
+		\item fragment pustej drogi,
+		\item fragment zawierający pojedyńczy samochód
+	\end{itemize}
+	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ (symbolizuje ona ograniczenie prędkości na drodze).
+	Czas $t$ w modelu Nagela-Schreckenberga przyjmuje wartość dyskretną o stałym kroku, gdzie każdy etap można podzielić na cztery następujące po sobie czynności:
+	\begin{enumerate}
+		\item Przyspieszanie: \\
+		Jeżeli $v(n) < v_{max}$ to prędkość samochodu może ulec zwiększeniu o zadaną jednostkę, nie przekraczając prędkości maksymalnej.
+		\item Zwalnianie: \\
+		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
+		\item Losowość: \\
+		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze. Dla każdego samochodu $n$, gdzie $v(n) > 0$, prędkość zostaje zmniejszona o jedną jednostkę, z pewnym zadanym prawdopodobieństwem $p$.
+		\item Ruch samochodu: \\
+		W ostatnim kroku każdy z samochodów zostaje przesunięty do przodu o odpowiednią ilość komórek, wynikającą z jego prędkości.
+	\end{enumerate}
+	
+	
 	\section{Propozycja rozwiązania}
 	TODO: jak to robimy, literatura
 	
