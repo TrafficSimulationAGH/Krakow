@@ -1,7 +1,15 @@
 # Obwodnica IV
-Symulacja ruchu drogowego na obwodnicy IV Krakowa.
+Symulacja dyskretna ruchu drogowego na obwodnicy IV Krakowa.
+
+## Struktura
+Foldery:
+- *doc*: zawiera polską dokumentację LaTeX projektu oraz propozycję rozwiązania (*proposal*)
+- *automata*: zawiera implementację rozwiązania w formie paczki Python 3
+- *automata/tests*: zawiera podstawowe testy jednostkowe
 
 ## Tutorial Git
+Tymczasowa lokalizacja.
+
 Quicktip:
 - apply changes `git add .` then `git commit`
 - check current branch `git branch`
