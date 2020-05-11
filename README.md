@@ -7,6 +7,22 @@ Foldery:
 - *automata*: zawiera implementację rozwiązania w formie paczki Python 3
 - *automata/tests*: zawiera podstawowe testy jednostkowe
 
+## Uruchomienie
+Program główny: `python automata/__init__.py`
+
+Testy: `python automata/tests/__init__.py`
+
+Importowanie:
+
+```
+$ python
+>>> import automata
+>>> automata.main()
+
+>>> import automata.tests
+>>> automata.tests.main()
+```
+
 ## Tutorial Git
 Tymczasowa lokalizacja.
 
