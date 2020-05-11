@@ -1,2 +1,85 @@
 % dokumentacja projektu w czasie tworzenia
+\documentclass[a4paper,12pt]{article}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{indentfirst}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{graphicx}
 
+\title{Symulacja ruchu drogowego na IV obwodnicy Krakowa}
+\author{Szymon Gałuszka, Michał Worsowicz, Maciej Nalepa}
+\date{\today}
+\begin{document}
+    \maketitle
+
+    \part{Omówienie projektu}
+
+	\section{Definicja problemu}
+	
+	Nasz cel to symulacja ruchu drogowego na IV obwodnicy Krakowa \ref{obw}. 
+	Konieczna jest definicja tras oraz sposobu poruszania się po nich.
+	Na obwodnicy nie ma sygnalizacji świetlnej, skrzyżowania znajdują się najczęściej pod wiaduktem i najpierw należy zjechać z drogi szybkiego ruchu.
+	Trasa ma zróżnicowane ograniczenia prędkości oraz różną ilość pasów ruchu.
+	
+	Ruch drogowy powinien uwzględniać pojazdy osobowe, ciężarowe i transport publiczny.
+	Ciężkie pojazdy obowiązują inne ograniczenia prędkości oraz zajmują więcej przestrzeni na jezdni.
+	Napływ ruchu powinien odbywać się przez wjazdy na obwodnicę, które wpuszczają samochody z określoną częstotliwością,która może zależeć od pory dnia.
+	
+	Koniecznym elementem jest symulacja zmiany pasa ruchu. 
+	Symulacja może obejmować wydarzenia losowe, takie jak:
+	
+	\begin{itemize}
+		\item blokada pasa ruchu,
+		\item zamknięcie zjazdu,
+		\item nagłe hamowanie.
+    \end{itemize}
+    
+    \section{Obszar symulacji}
+    % Obwodnica IV - szczegóły trasy
+
+    \section{Algorytm}
+    % Nagel-Schreckenberg
+
+    \part{Metodologia}
+
+    \section{Struktury danych}
+    % Tworzenie symulacji
+
+    \section{Implementacja}
+    % Wytłumaczenie rozwiązania problemu
+
+    \section{Usprawnienie}
+    % Słabe punkty implementacji, co działa za wolno lub niestabilnie
+
+    \part{Podsumowanie}
+
+    \section{Wyniki}
+    % Opis symulacji i wpływu parametrów na model
+
+    \section{Od autorów}
+    % Nasze przemyślenia o projekcie, napotkane trudności
+
+    \section{Dalsza praca}
+    % Uproszczenia i części wymagające ulepszeń lub optymalizacji
+    % Nie umieszczamy ich w projekcie, ale zaznaczamy od czego zacząć aby projekt usprawnić
+
+	\pagebreak
+	\begin{thebibliography}{15}
+		\bibitem{wikikrk}
+		Wiki, \textit{Kraków Obwodnica IV},
+		\texttt{\href{https://pl.wikipedia.org/wiki/Obwodnice_Krakowa\#IV_obwodnica}{wikipedia.org}}
+		
+		\bibitem{map}
+		OpenStreet, \textit{mapa},
+		\texttt{\href{https://www.openstreetmap.org/}{openstreetmap.org}}
+		
+		\bibitem{nagel}
+		K. Nagel, M. Schreckenberg, \textit{Two lane traffic simulations using cellular automata},
+		\texttt{\href{https://arxiv.org/pdf/cond-mat/9512119.pdf}{arxiv.org}}
+		% https://www.sciencedirect.com/science/article/pii/0378437195004424
+	\end{thebibliography}
+	
+\end{document}
