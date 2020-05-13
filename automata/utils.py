@@ -1,7 +1,8 @@
 """
 Utility functions and classes definitions.
 """
+import numpy as np
 
-def example(a, b, c):
+def example(a, b):
     " This is an example function and should be removed asap "
-    pass
+    return 0
