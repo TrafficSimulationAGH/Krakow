@@ -6,7 +6,9 @@ Imports: numpy, matplotlib
 import renderer
 
 def main():
-    m = renderer.MapPlot()
+    data = renderer.MapData('krakow.json')
+    m = renderer.Plotter(data, lambda frame: None)
+    m.blank()
     m.render()
 
 if __name__ == "__main__":
