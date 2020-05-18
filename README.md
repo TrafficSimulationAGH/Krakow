@@ -1,37 +1,27 @@
 # Obwodnica IV
-Symulacja ruchu drogowego na obwodnicy IV Krakowa.
+Symulacja dyskretna ruchu drogowego na obwodnicy IV Krakowa.
 
-# Tutorial Git
-Quicktip:
-- apply changes `git add .` then `git commit`
-- check current branch `git branch`
-- update your branch from master `git checkout dev/[imie]` then `git merge master`
-- apply your work to master `git checkout master` then `git merge dev/[imie]`
-- sync from remote repository `git checkout master[OR]dev/[imie]` then `git pull origin <CURRENT-BRANCH>`
-- sync to remote repository `git push origin <BRANCH-TO-SYNC>`
+## Struktura
+Foldery:
+- *doc*: zawiera polską dokumentację LaTeX projektu oraz propozycję rozwiązania (*proposal*)
+- *automata*: zawiera implementację rozwiązania w formie paczki Python 3
+- *automata/tests*: zawiera podstawowe testy jednostkowe
 
-Ogólne zasady, konwencje:
-- repozytorium (repo) - projekt przechowywany w folderze, gdzie znajduje się folder ukryty `.git`;
-- branch - gałąź, domyślnie `master`, pozwala na prowadzenia równoległych wersji projektu; każdy posiada swoją gałąź o nazwie `dev/[imie]`, a co jakiś czas będziemy aktualizować postępy na `master`;
-- commit - zapisany stan plików; element historii repo; staramy się utrzymywać zasadę: 1 etap pracy 1 commit (np. dodano rozdział dokumentacji / rozszerzono opis);
-- stage - pliki przygotowane do dodania jako commit;
-- używamy języka angielskiego;
+## Uruchomienie
+Program główny: `python automata/__init__.py`
 
-Polecenia:
-- `git --help` - pomoc; można łączyć np. `git clone --help`; wersja kompaktowa pomocy `git -h` (nie zawsze dostępna);
-- `git clone [adres url/ssh] [opcjonalnie: folder docelowy]` - zielony przycisk u góry strony pozwala zmieniać link między SSH a HTTP; SSH używamy jeśli skonfiurowaliśmy klucz .pub `ssh-genkey` w ustawieniach konta github; HTTP zadziała wszędzie, ale wymaga podania hasła przy każdym dostępie do repozytorium zdalnego;
-- `git status` - podsumowanie aktualnych zmian w repo; wyświetla aktualny stage;
-- `git diff [opcja:HEAD]` - różnice względem ostatniego commitu; opcja HEAD pozwala porównać, jeśli wykonamy już `git add`;
-- `git add .` - dodaje wybrane foldery i pliki do stage; `.` oznacza aktualny folder;
-- `git commit` - zatwierdź zmiany; pojawi się edytor z podsumowaniem i poprosi o wpisanie komentarza, tytułu commita;
-- `git branch` - lista branchy; aktualna zaznaczona `*`;
-- `git checkout <cel>` - zmień branch lub przeskocz w historii repo do innego commita; tego używamy przede wszystkim do zmiany branch, zmiana commita dla zaawansowanych;
-- `git merge [branch]` - pobierz zmiany z innego branch do aktualnego; staramy się wymieniać tylko z `master`, czyli do master lub od master do siebie;
-- `git log` - historia commitów;
-- `git pull origin <branch>` - pobierz zdalne zmiany z branch; **UWAGA:** trzeba się upewnić, że pobieramy ten sam branch, na którym jesteśmy, w innym przypadku zaktualizujemy aktualny o zmiany z innego i trudno to cofnąć, postępujemy świadomie;
-- `git push origin <branch>` - zaktualizuj branch na githubie; nie powinno zależeć od aktualnego brancha;
+Testy: `python automata/tests/__init__.py`
 
-> Wszystkie polecenia wykonujemy w folderze projektu!
+Importowanie:
 
-Pozostałe polecenia dodam w swoim czasie, tyle wystarczy, aby zacząć.
+```
+$ python
+>>> import automata
+>>> automata.main()
 
+>>> import automata.tests
+>>> automata.tests.main()
+```
+
+## Tutorial Git
+Przeniesiony do wiki.
