@@ -3,13 +3,14 @@ Automata - a traffic simulation package.
 
 Imports: numpy, matplotlib
 """
-import renderer
+import automata.renderer as renderer
+import automata.core as core
 
 def main():
-    data = renderer.MapData('krakow.json')
+    data = core.OSM('krakow.json')
     m = renderer.Plotter(data, lambda frame: None)
-    m.blank()
-    m.render()
+    m.plot()
+    m.show()
 
 if __name__ == "__main__":
     main()
