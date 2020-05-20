@@ -3,8 +3,8 @@ Automata - a traffic simulation package.
 
 Imports: numpy, matplotlib
 """
-import renderer
-import core
+import automata.renderer as renderer
+import automata.core as core
 
 def main():
     data = core.OSM('krakow.json')

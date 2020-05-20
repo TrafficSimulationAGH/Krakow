@@ -2,9 +2,9 @@
 Core definitions, basic structures.
 """
 
-class Builder:
+class Cellular:
     """
-    Populates roads with cells.
+    Cells grid projected on OSM map.
     """
     
     def __init__(self):
@@ -57,11 +57,12 @@ class Cell:
     - location
     - vehicle inside
     - adjacent cells
+    - road information dict
     """
 
-    def __init__(self, coords, speed_limit=4):
+    def __init__(self, coords):
+        self.info = {}
         self.probability = 0.5
-        self.speed_limit = speed_limit
         self.coords = coords
         self.vehicle = None
         self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
