@@ -1,6 +1,5 @@
 """
 Automata - a traffic simulation package.
-
 Imports: numpy, matplotlib
 """
 import automata.renderer as renderer
