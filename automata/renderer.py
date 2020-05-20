@@ -42,7 +42,7 @@ class MapData:
 
     def __init__(self, jsonfile=None):
         if jsonfile is not None:
-            with open(jsonfile, 'r') as f:
+            with open(jsonfile, 'r', encoding = 'utf-8') as f:
                 json = f.read()
             self.load(json)
 

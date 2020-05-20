@@ -2,6 +2,8 @@
 Core definitions, basic structures.
 """
 
+import random
+
 class Coords:
     """
     Geographical coordinates.
@@ -72,7 +74,8 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
-        pass
+        if self.v > 0:
+            self.v = random.choices([self.v, self.v-1], [1-self.P, self.P])
 
     def step(self):
         "Move forward"
