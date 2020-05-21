@@ -13,7 +13,7 @@ class TestCoords(TestCase):
     def test_dist(self):
         a = core.Coords(10.0, 10.0)
         b = core.Coords(11.0, 9.0)
-        result = 155.93 #km
+        result = 155.99 #km
         self.assertAlmostEqual(a.dist(b) / 1000, result)
         self.assertAlmostEqual(b.dist(a) / 1000, result)
         self.assertAlmostEqual(b.dist(b), 0.0)
@@ -53,5 +53,5 @@ class TestVehicle(TestCase):
         road.start.set_vehicle(car)
         car.step()
         self.assertTrue(road.start.is_free())
-        self.assertFalse(road['front'].is_free())
+        self.assertFalse(road.start['front'].is_free())
         self.assertTrue(road.start['front']['front'].is_free())

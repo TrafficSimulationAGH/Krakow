@@ -8,7 +8,7 @@ Foldery:
 - *automata/tests*: zawiera podstawowe testy jednostkowe
 
 ## Uruchomienie
-Program główny: `python automata/__init__.py`
+Program główny: `python run.py`
 
 Testy: `python automata/tests/__init__.py`
 

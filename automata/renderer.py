@@ -3,27 +3,32 @@ Render a map and simulation elements.
 """
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import automata.utils as utils
 
-class MapPlot:
+class Plotter:
     """
     Plot wrapper for map drawing
+    mapdata - MapData object
+    updatef - update function f(frame)
     """
 
-    def __init__(self):
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot()
-        self.xdata = []
-        self.ydata = []
+    def __init__(self, mapdata, updatef):
+        self.osmap = mapdata
+        self.updatef = updatef
 
     def update(self, frame):
-        self.xdata.append(frame)
-        self.ydata.append(frame**2.0)
-        self.ln.set_data(self.xdata, self.ydata)
-        return self.ln,
+        self.updatef(frame)
+        return plt.plot([20.5], [49.5], 'ro')
 
-    def render(self):
-        self.ln, = plt.plot([], [], 'ro')
-        self.ax.set_xlim(-1, 5)
-        self.ax.set_ylim(-1, 17)
-        anim = FuncAnimation(self.fig, lambda f: self.update(f), frames=range(0,4), blit=False, interval=1000)
+    def plot(self):
+        "Initialize map plot"
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot()
+        self.ax.set_xlim(*self.osmap.bbox['x'])
+        self.ax.set_ylim(*self.osmap.bbox['y'])
+        utils.plot_map(self.osmap)
+
+    def show(self):
+        "Show map plot"
+        anim = FuncAnimation(self.fig, self.update, frames=range(0,4), blit=False, interval=1000)
         plt.show()
