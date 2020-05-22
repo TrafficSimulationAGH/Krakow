@@ -1,5 +1,5 @@
 from unittest import TestCase
-import mock
+from . import mock
 import automata.core as core
 
 class TestCoords(TestCase):
