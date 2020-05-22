@@ -60,8 +60,10 @@ class Cell:
     - road information dict
     """
 
-    def __init__(self, coords):
+    def __init__(self, coords, info=None):
         self.info = {}
+        if info is not None:
+            self.info = info
         self.probability = 0.5
         self.coords = coords
         self.vehicle = None
