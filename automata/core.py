@@ -1,6 +1,8 @@
 """
 Core definitions, basic structures.
 """
+from random import choices
+from math import sin, cos, sqrt, atan2, radians
 
 class Cellular:
     """
@@ -20,7 +22,7 @@ class OSM:
 
     def __init__(self, jsonfile=None):
         if jsonfile is not None:
-            with open(jsonfile, 'r') as f:
+            with open(jsonfile, 'r', encoding = 'utf-8') as f:
                 json = f.read()
             self.load(json)
 
@@ -47,7 +49,15 @@ class Coords:
 
     def dist(self, other):
         "Distance to other location"
-        return 0.0
+        R = 6373000.0
+        dlon = radians(self.lon - other.lon)
+        dlat = radians(self.lat - other.lat)
+        
+        a = sin(dlat / 2)**2 + cos(radians(other.lat)) * cos(radians(self.lat)) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        distance = R * c
+        
+        return round(distance)
 
 class Cell:
     """
@@ -109,8 +119,13 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
-        pass
+        if self.v > 0:
+            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
 
     def step(self):
         "Move forward"
-        pass
+        if self.cell.adj['front'].is_free():
+            self.cell.adj['front'].vehicle = self
+            self.cell.vehicle = None
+            self.cell = self.cell.adj['front']
+        
