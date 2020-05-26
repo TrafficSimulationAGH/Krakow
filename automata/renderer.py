@@ -17,8 +17,8 @@ class Plotter:
         self.updatef = updatef
 
     def update(self, frame):
-        self.updatef(frame)
-        return plt.plot([20.5], [49.5], 'ro')
+        ax = None
+        return ax
 
     def plot(self):
         "Initialize map plot"
@@ -26,9 +26,9 @@ class Plotter:
         self.ax = self.fig.add_subplot()
         self.ax.set_xlim(*self.osmap.bbox['x'])
         self.ax.set_ylim(*self.osmap.bbox['y'])
-        utils.plot_map(self.osmap)
+        utils.plot_elements(self.osmap.roads, self.osmap.COLOR)
 
     def show(self):
         "Show map plot"
-        anim = FuncAnimation(self.fig, self.update, frames=range(0,4), blit=False, interval=1000)
+        #anim = FuncAnimation(self.fig, self.update, frames=range(0,4), blit=False, interval=1000)
         plt.show()

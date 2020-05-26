@@ -6,3 +6,4 @@
 
 # Rozwiązania implementacji
 - mapa budowana z komórek z listą sąsiadów
+- plik settings w mapie, który pozwala rekonfigurować skrzyżowania i spawn points

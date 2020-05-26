@@ -4,20 +4,12 @@ Core definitions, basic structures.
 from random import choices
 from math import sin, cos, sqrt, atan2, radians
 
-class Cellular:
-    """
-    Cells grid projected on OSM map.
-    """
-    
-    def __init__(self):
-        pass
-
 class OSM:
     """
     Map information wrapper
     HIGHWAY defines osm highway filters
     """
-    HIGHWAY = ['primary', 'secondary', 'motorway', 'proposed', 'trunk', 'tertiary_link', 'primary_link', 'motorway_link', 'trunk_link', 'stop', 'bridleway', 'platform', 'construction', 'traffic_signals', 'turning_circle', 'give_way', 'motorway_junction']
+    HIGHWAY = ['primary', 'motorway', 'proposed', 'trunk', 'primary_link', 'motorway_link', 'trunk_link', 'give_way', 'motorway_junction']
     COLOR = 'b'
 
     def __init__(self, jsonfile=None):
@@ -26,17 +18,28 @@ class OSM:
                 json = f.read()
             self.load(json)
 
+    def filter(self, func):
+        """
+        Filter out roads.
+        func: item -> bool
+        """
+        return list(filter(func, self.roads))
+
     def load(self, json):
         "Load and filter data"
         def f(i):
             if 'highway' in i['properties']:
-                return i['properties']['highway'] in self.HIGHWAY
+                precond = i['properties']['highway'] in self.HIGHWAY
+                if 'proposed' in i['properties']:
+                    return precond and i['properties']['proposed'] in self.HIGHWAY
+                return precond
             else:
                 return False
         data = eval(json)
         bbox = data['bbox']
         self.bbox = {'x': (bbox[0], bbox[2]), 'y': (bbox[1], bbox[3])}
-        self.roads = list(filter(f, data['features']))
+        self.roads = data['features']
+        self.roads = self.filter(f)
 
 class Coords:
     """
@@ -70,8 +73,10 @@ class Cell:
     - road information dict
     """
 
-    def __init__(self, coords):
+    def __init__(self, coords, info=None):
         self.info = {}
+        if info is not None:
+            self.info = info
         self.probability = 0.5
         self.coords = coords
         self.vehicle = None
@@ -79,6 +84,12 @@ class Cell:
 
     def __getitem__(self, key):
         return self.adj[key]
+
+    def __eq__(self, other):
+        return self.coords == other.coords
+
+    def __repr__(self):
+        return '<automata.core.Cell ({0}:{1})>'.format(*self.coords)
 
     def exists(self, key):
         "Check if the cell is linked with another"
@@ -126,4 +137,29 @@ class Vehicle:
             self.cell.adj['front'].vehicle = self
             self.cell.vehicle = None
             self.cell = self.cell.adj['front']
-        
+
+class Cellular:
+    """
+    Cells grid projected on OSM map.
+    Stores data in an array of Cells connected with their adj tables.
+    """
+    
+    def __init__(self):
+        self.array = []
+
+    def build(self, data:OSM):
+        """ Construct cellular grid from OSM object """
+        # Useful properties:
+        # lanes turn:lanes :forward :backward
+        # oneway junction
+        # maxspeed maxspeed:hgv:conditional overtaking
+        # destination destination:lanes destination:symbol:lanes
+        pass
+
+    def save(self, path):
+        """ Save array to file """
+        pass
+
+    def load(self, path):
+        """ Load map from file """
+        pass
