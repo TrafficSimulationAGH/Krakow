@@ -4,14 +4,6 @@ Core definitions, basic structures.
 from random import choices
 from math import sin, cos, sqrt, atan2, radians
 
-class Cellular:
-    """
-    Cells grid projected on OSM map.
-    """
-    
-    def __init__(self):
-        pass
-
 class OSM:
     """
     Map information wrapper
@@ -26,6 +18,13 @@ class OSM:
                 json = f.read()
             self.load(json)
 
+    def filter(self, func):
+        """
+        Filter out roads.
+        func: item -> bool
+        """
+        return list(filter(func, self.roads))
+
     def load(self, json):
         "Load and filter data"
         def f(i):
@@ -36,7 +35,8 @@ class OSM:
         data = eval(json)
         bbox = data['bbox']
         self.bbox = {'x': (bbox[0], bbox[2]), 'y': (bbox[1], bbox[3])}
-        self.roads = list(filter(f, data['features']))
+        self.roads = data['features']
+        self.roads = self.filter(f)
 
 class Coords:
     """
@@ -128,4 +128,28 @@ class Vehicle:
             self.cell.adj['front'].vehicle = self
             self.cell.vehicle = None
             self.cell = self.cell.adj['front']
-        
+
+class Cellular:
+    """
+    Cells grid projected on OSM map.
+    """
+    
+    def __init__(self):
+        self.array = []
+
+    def build(self, data:OSM):
+        """ Construct cellular grid from OSM object """
+        # Useful properties:
+        # lanes turn:lanes :forward :backward
+        # oneway junction crossing
+        # maxspeed maxspeed:hgv:conditional overtaking toll
+        # destination destination:lanes destination:symbol:lanes
+        pass
+
+    def save(self, path):
+        """ Save array to file """
+        pass
+
+    def load(self, path):
+        """ Load map from file """
+        pass
