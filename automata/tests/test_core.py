@@ -2,6 +2,18 @@ from unittest import TestCase
 from . import mock
 import automata.core as core
 
+class TestCellular(TestCase):
+    def test_build(self):
+        builder = core.Cellular()
+        builder.build(mock.MockJsonMap)
+        self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
+
+    def test_saveload(self):
+        mock.MockJsonMap.save('temporary.json')
+        fromfile = core.Cellular()
+        fromfile.load('temporary.json')
+        self.assertSequenceEqual(fromfile.array, mock.MockJsonMap.array)
+
 class TestCoords(TestCase):
     def test_init(self):
         c = core.Coords(23.0, 50)
@@ -48,10 +60,10 @@ class TestVehicle(TestCase):
         self.assertNotEqual(vh.v, 5)
 
     def test_step(self):
-        road = mock.MockStraightRoad()
+        road = mock.MockStraightRoad
         car = core.Vehicle(1)
-        road.start.set_vehicle(car)
+        road.set_vehicle(car)
         car.step()
-        self.assertTrue(road.start.is_free())
-        self.assertFalse(road.start['front'].is_free())
-        self.assertTrue(road.start['front']['front'].is_free())
+        self.assertTrue(road.is_free())
+        self.assertFalse(road['front'].is_free())
+        self.assertTrue(road['front']['front'].is_free())

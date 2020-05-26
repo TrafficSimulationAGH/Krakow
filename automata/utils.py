@@ -4,7 +4,7 @@ Utility functions and classes definitions.
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_elements(data, clr='b', ax=None):
+def plot_elements(data, clr='b', ax=None, point='x'):
     "Plot list of road elements"
     for road in data:
         geom = road['geometry']
@@ -16,7 +16,8 @@ def plot_elements(data, clr='b', ax=None):
             else:
                 xs = [i[0] for i in coords]
                 ys = [i[1] for i in coords]
+            mark = '' if len(xs) > 1 else point
             if ax is None:
-                plt.plot(xs, ys, clr)
+                plt.plot(xs, ys, clr + mark)
             else:
-                ax.plot(xs, ys, clr)
+                ax.plot(xs, ys, clr + mark)

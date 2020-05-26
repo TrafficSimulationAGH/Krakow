@@ -9,7 +9,7 @@ class OSM:
     Map information wrapper
     HIGHWAY defines osm highway filters
     """
-    HIGHWAY = ['primary', 'secondary', 'motorway', 'proposed', 'trunk', 'tertiary_link', 'primary_link', 'motorway_link', 'trunk_link', 'stop', 'bridleway', 'platform', 'construction', 'traffic_signals', 'turning_circle', 'give_way', 'motorway_junction']
+    HIGHWAY = ['primary', 'motorway', 'proposed', 'trunk', 'primary_link', 'motorway_link', 'trunk_link', 'give_way', 'motorway_junction']
     COLOR = 'b'
 
     def __init__(self, jsonfile=None):
@@ -29,7 +29,10 @@ class OSM:
         "Load and filter data"
         def f(i):
             if 'highway' in i['properties']:
-                return i['properties']['highway'] in self.HIGHWAY
+                precond = i['properties']['highway'] in self.HIGHWAY
+                if 'proposed' in i['properties']:
+                    return precond and i['properties']['proposed'] in self.HIGHWAY
+                return precond
             else:
                 return False
         data = eval(json)
@@ -82,6 +85,12 @@ class Cell:
     def __getitem__(self, key):
         return self.adj[key]
 
+    def __eq__(self, other):
+        return self.coords == other.coords
+
+    def __repr__(self):
+        return '<automata.core.Cell ({0}:{1})>'.format(*self.coords)
+
     def exists(self, key):
         "Check if the cell is linked with another"
         return self.adj[key] is not None
@@ -132,6 +141,7 @@ class Vehicle:
 class Cellular:
     """
     Cells grid projected on OSM map.
+    Stores data in an array of Cells connected with their adj tables.
     """
     
     def __init__(self):
@@ -141,8 +151,8 @@ class Cellular:
         """ Construct cellular grid from OSM object """
         # Useful properties:
         # lanes turn:lanes :forward :backward
-        # oneway junction crossing
-        # maxspeed maxspeed:hgv:conditional overtaking toll
+        # oneway junction
+        # maxspeed maxspeed:hgv:conditional overtaking
         # destination destination:lanes destination:symbol:lanes
         pass
 
