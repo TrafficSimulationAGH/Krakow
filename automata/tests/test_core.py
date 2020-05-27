@@ -9,10 +9,10 @@ class TestCellular(TestCase):
         self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
 
     def test_saveload(self):
-        mock.MockJsonMap.save('temporary.json')
+        mock.MockCellularMap.save('temporary.json')
         fromfile = core.Cellular()
         fromfile.load('temporary.json')
-        self.assertSequenceEqual(fromfile.array, mock.MockJsonMap.array)
+        self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
 
 class TestCoords(TestCase):
     def test_init(self):
