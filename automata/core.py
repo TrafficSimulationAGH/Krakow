@@ -3,6 +3,8 @@ Core definitions, basic structures.
 """
 from random import choices
 from math import sin, cos, sqrt, atan2, radians
+import json
+import pandas as pd
 
 class OSM:
     """
@@ -154,12 +156,25 @@ class Cellular:
         # oneway junction
         # maxspeed maxspeed:hgv:conditional overtaking
         # destination destination:lanes destination:symbol:lanes
-        pass
+        
+        df = pd.DataFrame(data.roads)
+        df2 = pd.DataFrame(df['geometry'].values.tolist())
+        for x in df2['coordinates']:
+            if type(x[0]) is float:
+                self.array.append(Cell(x, info=df['properties']))
+            else:
+                self.array += [Cell(c, info=df['properties']) for c in x]        
+        
 
     def save(self, path):
         """ Save array to file """
-        pass
+        with open(path, 'w', encoding='utf-8') as file:
+            json.dump(self.array, file, default=lambda x: x.__dict__, ensure_ascii=False, indent=4)
 
     def load(self, path):
         """ Load map from file """
-        pass
+        with open(path, 'r', encoding = 'utf-8') as file:
+            data = json.load(file)
+            for x in data:
+                self.array.append(Cell(x['coords'], info=x['info']))
+        
