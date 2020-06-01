@@ -66,7 +66,7 @@ class Cell:
     """
     Cell links: front, back, left, right
     Road cell containing information about:
-    - probability of entering (for junctions)
+    - chance of entering (for junctions)
     - location
     - vehicle inside
     - adjacent cells
@@ -77,7 +77,7 @@ class Cell:
         self.info = {}
         if info is not None:
             self.info = info
-        self.probability = 0.5
+        self.chance = 1.0
         self.coords = coords
         self.vehicle = None
         self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
@@ -110,6 +110,30 @@ class Cell:
     def is_free(self):
         "Is cell available"
         return self.vehicle is None
+
+class SpawnPoint(Cell):
+    """
+    Cell derived class that populates itself with vehicles.
+    P - probability of spawning
+    DVEHICLE - default vehicle model
+    """
+    P = 0.5
+    DVEHICLE = Vehicle
+
+    def __init__(self, coords, info=None):
+        super().__init__(coords, info=info)
+
+    def spawn(self):
+        "Spawn a vehicle with a random chance. Only if empty."
+        pass
+
+    @staticmethod
+    def from_cell(cell: Cell):
+        sp = SpawnPoint(cell.coords, cell.info)
+        sp.adj = cell.adj
+        sp.chance = cell.chance
+        sp.set_vehicle(cell.vehicle)
+        return sp
 
 class Vehicle:
     """

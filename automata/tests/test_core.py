@@ -51,6 +51,21 @@ class TestCell(TestCase):
         x.vehicle = core.Vehicle(1)
         self.assertFalse(x.is_free())
 
+class TestSpawnPoint(TestCase):
+    def test_spawn(self):
+        sp = core.SpawnPoint([0.0, 0.0])
+        sp.P = 1.0
+        fst = sp.is_free()
+        sp.spawn()
+        snd = not sp.is_free()
+        self.assertTrue(fst and snd)
+        sp.set_vehicle(None)
+        fst = sp.is_free()
+        sp.P = 0.0
+        sp.spawn()
+        snd = sp.is_free()
+        self.assertTrue(fst and snd)
+
 class TestVehicle(TestCase):
     def test_randomize(self):
         vh = core.Vehicle(5)
