@@ -138,6 +138,25 @@ class Cell:
         "Is cell available"
         return self.vehicle is None
 
+class DeadPoint(Cell):
+    """
+    Cell derived class that removes all vehicles that enter it.
+    """
+    def __init__(self, coords, info=None):
+        super().__init__(coords, info=info)
+
+    def set_vehicle(self, vehicle):
+        self.vehicle = None
+        vehicle.cell = None
+        del vehicle
+
+    @staticmethod
+    def from_cell(cell: Cell):
+        dp = DeadPoint(cell.coords, cell.info)
+        dp.adj = cell.adj
+        dp.chance = cell.chance
+        return dp
+
 class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
