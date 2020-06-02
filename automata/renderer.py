@@ -2,6 +2,8 @@
 Render a map and simulation elements.
 """
 import matplotlib.pyplot as plt
+# FuncAnimation might not work well
+# Try blit
 from matplotlib.animation import FuncAnimation
 import automata.utils as utils
 

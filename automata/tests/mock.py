@@ -2,8 +2,10 @@
 Mock data for unit tests.
 """
 import numpy as np
-from automata.core import Cell, OSM, Cellular
+from automata.openmap import OSM
+from automata.core import Cell, Cellular
 
+# TODO: build full net
 def npy2cells():
     npy = np.load('automata/tests/mock.npy', allow_pickle=True)
     cells = []
