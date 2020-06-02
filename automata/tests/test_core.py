@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 from . import mock
 import automata.core as core
@@ -13,6 +14,7 @@ class TestCellular(TestCase):
         fromfile = core.Cellular()
         fromfile.load('temporary.json')
         self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
+        os.remove('temporary.json')
 
 class TestCell(TestCase):
     def test_getitem(self):
@@ -43,6 +45,7 @@ class TestSpawnPoint(TestCase):
         sp.spawn()
         snd = not sp.is_free()
         self.assertTrue(fst and snd)
+
         sp.set_vehicle(None)
         fst = sp.is_free()
         sp.P = 0.0
