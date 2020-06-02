@@ -62,6 +62,33 @@ class Coords:
         
         return round(distance)
 
+class Vehicle:
+    """
+    Static variables:
+    V_MAX - maximum speed
+    P - probability of braking/accelerating
+    A - overtaking agression
+    """
+    V_MAX = 10
+    P = 0.05
+    A = 0.9
+
+    def __init__(self, v):
+        self.v = v
+        self.cell = None
+
+    def randomize(self):
+        "Change variables randomly"
+        if self.v > 0:
+            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
+
+    def step(self):
+        "Move forward"
+        if self.cell.adj['front'].is_free():
+            self.cell.adj['front'].vehicle = self
+            self.cell.vehicle = None
+            self.cell = self.cell.adj['front']
+
 class Cell:
     """
     Cell links: front, back, left, right
@@ -115,10 +142,8 @@ class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
     P - probability of spawning
-    DVEHICLE - default vehicle model
     """
     P = 0.5
-    DVEHICLE = Vehicle
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
@@ -134,33 +159,6 @@ class SpawnPoint(Cell):
         sp.chance = cell.chance
         sp.set_vehicle(cell.vehicle)
         return sp
-
-class Vehicle:
-    """
-    Static variables:
-    V_MAX - maximum speed
-    P - probability of braking/accelerating
-    A - overtaking agression
-    """
-    V_MAX = 10
-    P = 0.05
-    A = 0.9
-
-    def __init__(self, v):
-        self.v = v
-        self.cell = None
-
-    def randomize(self):
-        "Change variables randomly"
-        if self.v > 0:
-            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
-
-    def step(self):
-        "Move forward"
-        if self.cell.adj['front'].is_free():
-            self.cell.adj['front'].vehicle = self
-            self.cell.vehicle = None
-            self.cell = self.cell.adj['front']
 
 class Cellular:
     """
