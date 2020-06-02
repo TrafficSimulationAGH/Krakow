@@ -10,11 +10,11 @@ class TestCellular(TestCase):
         self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
 
     def test_saveload(self):
-        mock.MockCellularMap.save('temporary.json')
+        mock.MockCellularMap.save('temporary.csv')
         fromfile = core.Cellular()
-        fromfile.load('temporary.json')
-        if self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array):
-            os.remove('temporary.json')
+        fromfile.load('temporary.csv')
+        self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
+        os.remove('temporary.csv')
 
 class TestCell(TestCase):
     def test_getitem(self):

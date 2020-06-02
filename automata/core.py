@@ -3,7 +3,6 @@ Core definitions, basic structures.
 """
 from automata.openmap import OSM
 from random import choices
-import json
 import numpy as np
 import pandas as pd
 
@@ -59,21 +58,29 @@ class Cell:
 
     def __eq__(self, other):
         # TODO: compare more fields
-        return (self.coords == other.coords).sum() == len(self.coords)
+        return (self.coords == other.coords).all()
 
     def __repr__(self):
-        return '<automata.core.Cell ({0}:{1})>'.format(self.coords[0], self.coords[1])
+        return '<automata.core.Cell c{0}-{1}>'.format(len(self), self.is_free())
+
+    def __len__(self):
+        connections = 0
+        for k in self.adj:
+            if self.exists(k):
+                connections += 1
+        return connections
 
     def exists(self, key):
         "Check if the cell is linked with another"
         return self.adj[key] is not None
 
-    def add(self, cell, key='front'):
+    def add(self, cell, key='front', okey='back'):
         "Add cell under a key"
         if self.exists(key):
-            self.adj[key].add(cell, key)
+            self.adj[key].add(cell, key, okey)
         else:
             self.adj[key] = cell
+            cell.adj[okey] = self
 
     def set_vehicle(self, vehicle):
         "Set pointers for cell and vehicle"
@@ -130,10 +137,12 @@ class Cellular:
     Cells grid projected on OSM map.
     Stores data in an array of Cells connected with their adj tables.
     """
+    STEP = 0.0002
     
     def __init__(self):
         self.array = []
 
+    # TODO: use constant step to generate cells
     def build(self, data:OSM):
         """ Construct cellular grid from OSM object """
         # Useful properties:
@@ -144,22 +153,24 @@ class Cellular:
         df = pd.DataFrame(data.roads)
         df2 = pd.DataFrame(data=df['geometry'].tolist(), index=df.index)
         for i in df.index:
-            if type(df2.loc[i,'coordinates']) is float:
-                self.array.append(Cell(df2.loc[i,'coordinates'], info=df.loc[i,'properties']))
-            else:
+            if 'Line' in df2.loc[i,'type']:
                 self.array += [Cell(c, info=df.loc[i,'properties']) for c in df2.loc[i,'coordinates']]
         
     def save(self, path):
         """ Save array to file """
-        # TODO: dump adj - serialize pointer to another cell somehow (generate id)
-        dump = [{'info':cell.info, 'chance':cell.chance, 'coords':cell.coords.tolist()} for cell in self.array]
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(dump, f, ensure_ascii=False, indent=4)
+        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{}} for cell in self.array]
+        df = pd.DataFrame(dump)
+        # TODO: build adj dict basing on df index
+        df.to_csv(path, sep=';')
 
     def load(self, path):
         """ Load map from file """
-        with open(path, 'r', encoding = 'utf-8') as f:
-            data = json.load(f)
-            for x in data:
-                self.array.append(Cell(x['coords'], info=x['info']))
+        df = pd.read_csv(path, sep=';', index_col=0)
+        self.array = [Cell(eval(x[1]), eval(x[0])) for x in df.values]
+        for i in range(0,len(self.array)):
+            self.array[i].chance = df.loc[i,'chance']
+            adj = eval(df.loc[i,'adj'])
+            for k in adj:
+                if k != 'back' and adj[k] is not None:
+                    self.array[i].add(self.array[adj[k]], k)
         
