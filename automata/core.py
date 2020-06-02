@@ -1,74 +1,43 @@
 """
 Core definitions, basic structures.
 """
+from automata.openmap import OSM
 from random import choices
-from math import sin, cos, sqrt, atan2, radians
 import json
 import pandas as pd
 
-class OSM:
+class Vehicle:
     """
-    Map information wrapper
-    HIGHWAY defines osm highway filters
+    Static variables:
+    V_MAX - maximum speed
+    P - probability of braking/accelerating
+    A - overtaking agression
     """
-    HIGHWAY = ['primary', 'motorway', 'proposed', 'trunk', 'primary_link', 'motorway_link', 'trunk_link', 'give_way', 'motorway_junction']
-    COLOR = 'b'
+    V_MAX = 10
+    P = 0.05
+    A = 0.9
 
-    def __init__(self, jsonfile=None):
-        if jsonfile is not None:
-            with open(jsonfile, 'r', encoding = 'utf-8') as f:
-                json = f.read()
-            self.load(json)
+    def __init__(self, v):
+        self.v = v
+        self.cell = None
 
-    def filter(self, func):
-        """
-        Filter out roads.
-        func: item -> bool
-        """
-        return list(filter(func, self.roads))
+    def randomize(self):
+        "Change variables randomly"
+        if self.v > 0:
+            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
 
-    def load(self, json):
-        "Load and filter data"
-        def f(i):
-            if 'highway' in i['properties']:
-                precond = i['properties']['highway'] in self.HIGHWAY
-                if 'proposed' in i['properties']:
-                    return precond and i['properties']['proposed'] in self.HIGHWAY
-                return precond
-            else:
-                return False
-        data = eval(json)
-        bbox = data['bbox']
-        self.bbox = {'x': (bbox[0], bbox[2]), 'y': (bbox[1], bbox[3])}
-        self.roads = data['features']
-        self.roads = self.filter(f)
-
-class Coords:
-    """
-    Geographical coordinates.
-    """
-
-    def __init__(self, lat, lon):
-        self.lat = float(lat)
-        self.lon = float(lon)
-
-    def dist(self, other):
-        "Distance to other location"
-        R = 6373000.0
-        dlon = radians(self.lon - other.lon)
-        dlat = radians(self.lat - other.lat)
-        
-        a = sin(dlat / 2)**2 + cos(radians(other.lat)) * cos(radians(self.lat)) * sin(dlon / 2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        distance = R * c
-        
-        return round(distance)
+    def step(self):
+        "Move forward"
+        if self.cell.adj['front'].is_free():
+            self.cell.adj['front'].vehicle = self
+            self.cell.vehicle = None
+            self.cell = self.cell.adj['front']
 
 class Cell:
     """
     Cell links: front, back, left, right
     Road cell containing information about:
-    - probability of entering (for junctions)
+    - chance of entering (for junctions)
     - location
     - vehicle inside
     - adjacent cells
@@ -79,7 +48,7 @@ class Cell:
         self.info = {}
         if info is not None:
             self.info = info
-        self.probability = 0.5
+        self.chance = 1.0
         self.coords = coords
         self.vehicle = None
         self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
@@ -113,32 +82,46 @@ class Cell:
         "Is cell available"
         return self.vehicle is None
 
-class Vehicle:
+class DeadPoint(Cell):
     """
-    Static variables:
-    V_MAX - maximum speed
-    P - probability of braking/accelerating
-    A - overtaking agression
+    Cell derived class that removes all vehicles that enter it.
     """
-    V_MAX = 10
-    P = 0.05
-    A = 0.9
+    def __init__(self, coords, info=None):
+        super().__init__(coords, info=info)
 
-    def __init__(self, v):
-        self.v = v
-        self.cell = None
+    def set_vehicle(self, vehicle):
+        self.vehicle = None
+        vehicle.cell = None
+        del vehicle
 
-    def randomize(self):
-        "Change variables randomly"
-        if self.v > 0:
-            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
+    @staticmethod
+    def from_cell(cell: Cell):
+        dp = DeadPoint(cell.coords, cell.info)
+        dp.adj = cell.adj
+        dp.chance = cell.chance
+        return dp
 
-    def step(self):
-        "Move forward"
-        if self.cell.adj['front'].is_free():
-            self.cell.adj['front'].vehicle = self
-            self.cell.vehicle = None
-            self.cell = self.cell.adj['front']
+class SpawnPoint(Cell):
+    """
+    Cell derived class that populates itself with vehicles.
+    P - probability of spawning
+    """
+    P = 0.5
+
+    def __init__(self, coords, info=None):
+        super().__init__(coords, info=info)
+
+    def spawn(self):
+        "Spawn a vehicle with a random chance. Only if empty."
+        pass
+
+    @staticmethod
+    def from_cell(cell: Cell):
+        sp = SpawnPoint(cell.coords, cell.info)
+        sp.adj = cell.adj
+        sp.chance = cell.chance
+        sp.set_vehicle(cell.vehicle)
+        return sp
 
 class Cellular:
     """
@@ -165,7 +148,6 @@ class Cellular:
             else:
                 self.array += [Cell(c, info=df['properties']) for c in x]        
         
-
     def save(self, path):
         """ Save array to file """
         with open(path, 'w', encoding='utf-8') as file:
