@@ -8,6 +8,8 @@ class TestCellular(TestCase):
         builder = core.Cellular()
         builder.build(mock.MockJsonMap)
         self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
+        for b, m in zip(builder.array, mock.MockCellularMap.array):
+            self.assertDictEqual(b.adj, m.adj)
 
     def test_saveload(self):
         mock.MockCellularMap.save('temporary.csv')

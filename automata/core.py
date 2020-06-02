@@ -57,7 +57,8 @@ class Cell:
         return self.adj[key]
 
     def __eq__(self, other):
-        # TODO: compare more fields
+        if other is None:
+            return False
         return (self.coords == other.coords).all()
 
     def __repr__(self):
