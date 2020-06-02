@@ -12,9 +12,8 @@ class Plotter:
     updatef - update function f(frame)
     """
 
-    def __init__(self, mapdata, updatef):
+    def __init__(self, mapdata):
         self.osmap = mapdata
-        self.updatef = updatef
 
     def update(self, frame):
         ax = None
