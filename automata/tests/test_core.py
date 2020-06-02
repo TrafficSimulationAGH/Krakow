@@ -13,8 +13,8 @@ class TestCellular(TestCase):
         mock.MockCellularMap.save('temporary.json')
         fromfile = core.Cellular()
         fromfile.load('temporary.json')
-        self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
-        os.remove('temporary.json')
+        if self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array):
+            os.remove('temporary.json')
 
 class TestCell(TestCase):
     def test_getitem(self):

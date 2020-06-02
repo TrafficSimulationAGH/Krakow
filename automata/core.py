@@ -4,6 +4,7 @@ Core definitions, basic structures.
 from automata.openmap import OSM
 from random import choices
 import json
+import numpy as np
 import pandas as pd
 
 class Vehicle:
@@ -49,7 +50,7 @@ class Cell:
         if info is not None:
             self.info = info
         self.chance = 1.0
-        self.coords = coords
+        self.coords = np.array(coords)
         self.vehicle = None
         self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
 
@@ -57,10 +58,11 @@ class Cell:
         return self.adj[key]
 
     def __eq__(self, other):
-        return self.coords == other.coords
+        # TODO: compare more fields
+        return (self.coords == other.coords).sum() == len(self.coords)
 
     def __repr__(self):
-        return '<automata.core.Cell ({0}:{1})>'.format(*self.coords)
+        return '<automata.core.Cell ({0}:{1})>'.format(self.coords[0], self.coords[1])
 
     def exists(self, key):
         "Check if the cell is linked with another"
@@ -139,24 +141,25 @@ class Cellular:
         # oneway junction
         # maxspeed maxspeed:hgv:conditional overtaking
         # destination destination:lanes destination:symbol:lanes
-        
         df = pd.DataFrame(data.roads)
-        df2 = pd.DataFrame(df['geometry'].values.tolist())
-        for x in df2['coordinates']:
-            if type(x[0]) is float:
-                self.array.append(Cell(x, info=df['properties']))
+        df2 = pd.DataFrame(data=df['geometry'].tolist(), index=df.index)
+        for i in df.index:
+            if type(df2.loc[i,'coordinates']) is float:
+                self.array.append(Cell(df2.loc[i,'coordinates'], info=df.loc[i,'properties']))
             else:
-                self.array += [Cell(c, info=df['properties']) for c in x]        
+                self.array += [Cell(c, info=df.loc[i,'properties']) for c in df2.loc[i,'coordinates']]
         
     def save(self, path):
         """ Save array to file """
-        with open(path, 'w', encoding='utf-8') as file:
-            json.dump(self.array, file, default=lambda x: x.__dict__, ensure_ascii=False, indent=4)
+        # TODO: dump adj - serialize pointer to another cell somehow (generate id)
+        dump = [{'info':cell.info, 'chance':cell.chance, 'coords':cell.coords.tolist()} for cell in self.array]
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(dump, f, ensure_ascii=False, indent=4)
 
     def load(self, path):
         """ Load map from file """
-        with open(path, 'r', encoding = 'utf-8') as file:
-            data = json.load(file)
+        with open(path, 'r', encoding = 'utf-8') as f:
+            data = json.load(f)
             for x in data:
                 self.array.append(Cell(x['coords'], info=x['info']))
         
