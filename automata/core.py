@@ -85,7 +85,8 @@ class Cell:
 
     def set_vehicle(self, vehicle):
         "Set pointers for cell and vehicle"
-        vehicle.cell = self
+        if vehicle is not None:
+            vehicle.cell = self
         self.vehicle = vehicle
 
     def is_free(self):
@@ -123,7 +124,10 @@ class SpawnPoint(Cell):
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Only if empty."
-        pass
+        action = choices([0, 1], [1-self.P, self.P])
+        if self.is_free and action == [1]:
+            vehicle = Vehicle(1)
+            self.set_vehicle(vehicle)
 
     @staticmethod
     def from_cell(cell: Cell):
