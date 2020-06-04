@@ -28,10 +28,12 @@ class Vehicle:
 
     def step(self):
         "Move forward"
-        if self.cell.adj['front'].is_free():
-            self.cell.adj['front'].vehicle = self
-            self.cell.vehicle = None
-            self.cell = self.cell.adj['front']
+        # TODO: call randomize
+        # TODO: use other options than front as well
+        # TODO: use speed v
+        if self.cell.exists('front') and self.cell.adj['front'].is_free():
+            self.cell.set_vehicle(None)
+            self.cell['front'].set_vehicle(self)
 
 class Cell:
     """
@@ -71,11 +73,6 @@ class Cell:
                 connections += 1
         return connections
 
-    def step(self):
-        "Perform simulation step - call step if needed"
-        if self.vehicle is not None:
-            self.vehicle.step()
-
     def exists(self, key):
         "Check if the cell is linked with another"
         return self.adj[key] is not None
@@ -90,10 +87,10 @@ class Cell:
                 cell.adj[okey] = self
 
     def set_vehicle(self, vehicle):
-        "Set pointers for cell and vehicle"
-        if vehicle is not None:
-            vehicle.cell = self
+        "Set pointers for cell and vehicle."
         self.vehicle = vehicle
+        if self.vehicle is not None:
+            self.vehicle.cell = self
 
     def is_free(self):
         "Is cell available"
@@ -112,8 +109,6 @@ class DeadPoint(Cell):
     def set_vehicle(self, vehicle):
         self.vehicle = None
         vehicle.cell = None
-        if vehicle is not None:
-            del vehicle
 
     @staticmethod
     def from_cell(cell: Cell):
@@ -135,17 +130,12 @@ class SpawnPoint(Cell):
     def __repr__(self):
         return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
 
-    def step(self):
-        "Perform simulation step - spawn"
-        super().step()
-        self.spawn()
-
     def spawn(self):
-        "Spawn a vehicle with a random chance. Only if empty."
-        if not self.is_free():
-            return
-        if random() < self.P:
+        "Spawn a vehicle with a random chance. Returns spawned object."
+        if self.is_free() and random() < self.P:
             self.set_vehicle(Vehicle(2))
+            return self.vehicle
+        return None
 
     @staticmethod
     def from_cell(cell: Cell):
@@ -160,16 +150,26 @@ class Cellular:
     Cells grid projected on OSM map.
     Stores data in an array of Cells connected with their adj tables.
     """
-    STEP = 0.0002
+    RADIUS = 0.0002
     
     def __init__(self):
+        self.agents = []
         self.array = []
+        self.spawns = []
 
     def step(self):
-        for x in self.array:
+        "Perform simulation step. Call spawners and agents."
+        for x in self.spawns:
+            v = x.spawn()
+            if v is not None:
+                self.agents.append(v)
+        self.agents = [x for x in self.agents if x.cell is not None]
+        for x in self.agents:
+            if x is None:
+                continue
             x.step()
 
-    # TODO: use constant step to generate cells
+    # TODO: use constant radius to generate cells
     def build(self, data:OSM):
         """ Construct cellular grid from OSM object """
         # Useful properties:
