@@ -99,6 +99,9 @@ class DeadPoint(Cell):
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
 
+    def __repr__(self):
+        return '<automata.core.DeadPoint c{0}-{1}>'.format(len(self), self.is_free())
+
     def set_vehicle(self, vehicle):
         self.vehicle = None
         vehicle.cell = None
@@ -120,6 +123,9 @@ class SpawnPoint(Cell):
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
+
+    def __repr__(self):
+        return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Only if empty."
