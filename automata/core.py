@@ -2,7 +2,7 @@
 Core definitions, basic structures.
 """
 from automata.openmap import OSM
-from random import choices
+from random import choices, random
 import numpy as np
 import pandas as pd
 
@@ -23,7 +23,7 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
-        if self.v > 0:
+        if self.v > 1:
             self.v = choices([self.v, self.v-1], [1-self.P, self.P])
 
     def step(self):
@@ -71,21 +71,28 @@ class Cell:
                 connections += 1
         return connections
 
+    def step(self):
+        "Perform simulation step - call step if needed"
+        if self.vehicle is not None:
+            self.vehicle.step()
+
     def exists(self, key):
         "Check if the cell is linked with another"
         return self.adj[key] is not None
 
     def add(self, cell, key='front', okey='back'):
-        "Add cell under a key"
+        "Add cell under a key. Self is assigned on next cell under okey - to disable use okey=None"
         if self.exists(key):
             self.adj[key].add(cell, key, okey)
         else:
             self.adj[key] = cell
-            cell.adj[okey] = self
+            if okey is not None:
+                cell.adj[okey] = self
 
     def set_vehicle(self, vehicle):
         "Set pointers for cell and vehicle"
-        vehicle.cell = self
+        if vehicle is not None:
+            vehicle.cell = self
         self.vehicle = vehicle
 
     def is_free(self):
@@ -105,7 +112,8 @@ class DeadPoint(Cell):
     def set_vehicle(self, vehicle):
         self.vehicle = None
         vehicle.cell = None
-        del vehicle
+        if vehicle is not None:
+            del vehicle
 
     @staticmethod
     def from_cell(cell: Cell):
@@ -119,7 +127,7 @@ class SpawnPoint(Cell):
     Cell derived class that populates itself with vehicles.
     P - probability of spawning
     """
-    P = 0.5
+    P = 0.3
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
@@ -127,9 +135,17 @@ class SpawnPoint(Cell):
     def __repr__(self):
         return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
 
+    def step(self):
+        "Perform simulation step - spawn"
+        super().step()
+        self.spawn()
+
     def spawn(self):
         "Spawn a vehicle with a random chance. Only if empty."
-        pass
+        if not self.is_free():
+            return
+        if random() < self.P:
+            self.set_vehicle(Vehicle(2))
 
     @staticmethod
     def from_cell(cell: Cell):
@@ -148,6 +164,10 @@ class Cellular:
     
     def __init__(self):
         self.array = []
+
+    def step(self):
+        for x in self.array:
+            x.step()
 
     # TODO: use constant step to generate cells
     def build(self, data:OSM):

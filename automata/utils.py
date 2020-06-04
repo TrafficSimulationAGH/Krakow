@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 def plot_cells(cells, clr='ro', ax=None):
     coords = np.array([np.array(c.coords) for c in cells])
+    if len(coords) < 1:
+        return
     if ax is None:
         plt.plot(*coords.T, clr)
     else:

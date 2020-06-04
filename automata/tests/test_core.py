@@ -62,6 +62,9 @@ class TestVehicle(TestCase):
         vh.V_MAX = 6
         vh.randomize()
         self.assertNotEqual(vh.v, 5)
+        vh.v = 1
+        vh.randomize()
+        self.assertEqual(vh.v, 1)
 
     def test_step(self):
         road = mock.MockStraightRoad
