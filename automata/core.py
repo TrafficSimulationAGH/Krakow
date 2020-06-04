@@ -28,11 +28,10 @@ class Vehicle:
 
     def step(self):
         "Move forward"
-        # TODO: do not move only front
-        if self.cell['front'].is_free():
-            self.cell['front'].vehicle = self
+        if self.cell.adj['front'].is_free():
+            self.cell.adj['front'].vehicle = self
             self.cell.vehicle = None
-            self.cell = self.cell['front']
+            self.cell = self.cell.adj['front']
 
 class Cell:
     """
@@ -44,7 +43,6 @@ class Cell:
     - adjacent cells
     - road information dict
     """
-    ADJ = ('front', 'back', 'left', 'right')
 
     def __init__(self, coords, info=None):
         self.info = {}
@@ -53,19 +51,10 @@ class Cell:
         self.chance = 1.0
         self.coords = np.array(coords)
         self.vehicle = None
-        self.front = None
-        self.back = None
-        self.left = None
-        self.right = None
-    
-    def __setitem__(self, key, value):
-        if key in self.ADJ:
-            setattr(self, key, value)
+        self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
 
     def __getitem__(self, key):
-        if key in self.ADJ:
-            return getattr(self, key)
-        return None
+        return self.adj[key]
 
     def __eq__(self, other):
         if other is None:
@@ -77,7 +66,7 @@ class Cell:
 
     def __len__(self):
         connections = 0
-        for k in self.ADJ:
+        for k in self.adj:
             if self.exists(k):
                 connections += 1
         return connections
@@ -89,16 +78,16 @@ class Cell:
 
     def exists(self, key):
         "Check if the cell is linked with another"
-        return self[key] is not None
+        return self.adj[key] is not None
 
     def add(self, cell, key='front', okey='back'):
         "Add cell under a key. Self is assigned on next cell under okey - to disable use okey=None"
         if self.exists(key):
-            self[key].add(cell, key, okey)
+            self.adj[key].add(cell, key, okey)
         else:
-            self[key] = cell
+            self.adj[key] = cell
             if okey is not None:
-                cell[okey] = self
+                cell.adj[okey] = self
 
     def set_vehicle(self, vehicle):
         "Set pointers for cell and vehicle"
@@ -129,8 +118,7 @@ class DeadPoint(Cell):
     @staticmethod
     def from_cell(cell: Cell):
         dp = DeadPoint(cell.coords, cell.info)
-        for k in dp.ADJ:
-            dp[k] = cell[k]
+        dp.adj = cell.adj
         dp.chance = cell.chance
         return dp
 
@@ -162,8 +150,7 @@ class SpawnPoint(Cell):
     @staticmethod
     def from_cell(cell: Cell):
         sp = SpawnPoint(cell.coords, cell.info)
-        for k in sp.ADJ:
-            sp[k] = cell[k]
+        sp.adj = cell.adj
         sp.chance = cell.chance
         sp.set_vehicle(cell.vehicle)
         return sp

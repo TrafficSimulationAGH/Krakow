@@ -9,8 +9,7 @@ class TestCellular(TestCase):
         builder.build(mock.MockJsonMap)
         self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
         for b, m in zip(builder.array, mock.MockCellularMap.array):
-            for k in b.ADJ:
-                self.assertEqual(b[k], m[k])
+            self.assertDictEqual(b.adj, m.adj)
 
     def test_saveload(self):
         mock.MockCellularMap.save('temporary.csv')
@@ -23,8 +22,8 @@ class TestCell(TestCase):
     def test_getitem(self):
         x = core.Cell(None)
         x.add(core.Cell(None))
-        self.assertIsNone(x['back'])
-        self.assertIsNotNone(x['front'])
+        self.assertIsNone(x.adj['back'])
+        self.assertIsNotNone(x.adj['front'])
 
     def test_add(self):
         x = core.Cell(None)
