@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 def plot_cells(cells, clr='ro', ax=None):
     coords = np.array([np.array(c.coords) for c in cells])
     if len(coords) < 1:
-        return
+        return None
     if ax is None:
-        plt.plot(*coords.T, clr)
+        ln = plt.plot(*coords.T, clr)
     else:
-        ax.plot(*coords.T, clr)
+        ln = ax.plot(*coords.T, clr)
+    return ln
 
 def plot_elements(data, clr='b', ax=None, point='x'):
     "Plot list of road elements"

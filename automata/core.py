@@ -112,6 +112,7 @@ class DeadPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
+        # TODO: cast not copy
         dp = DeadPoint(cell.coords, cell.info)
         dp.adj = cell.adj
         dp.chance = cell.chance
@@ -139,6 +140,7 @@ class SpawnPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
+        # TODO: cast not copy
         sp = SpawnPoint(cell.coords, cell.info)
         sp.adj = cell.adj
         sp.chance = cell.chance
