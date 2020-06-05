@@ -1,3 +1,8 @@
+# TODO
+- Vehicle - speed should affect step, should choose direction between front-left-right
+- Cellular - should save dataframe with adj set according to df.index
+- Cellular - should build map with lanes and left-right connections
+
 # Cele
 - symulacja cyklu dnia / tygodnia
 - raporty: średnia przepustowość dróg

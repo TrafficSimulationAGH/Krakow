@@ -103,6 +103,9 @@ class DeadPoint(Cell):
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
 
+    def __init_subclass__(cls):
+        return super().__init_subclass__()
+
     def __repr__(self):
         return '<automata.core.DeadPoint c{0}-{1}>'.format(len(self), self.is_free())
 
@@ -112,11 +115,7 @@ class DeadPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
-        # TODO: cast not copy
-        dp = DeadPoint(cell.coords, cell.info)
-        dp.adj = cell.adj
-        dp.chance = cell.chance
-        return dp
+        return DeadPoint(cell)
 
 class SpawnPoint(Cell):
     """
@@ -127,6 +126,9 @@ class SpawnPoint(Cell):
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
+    
+    def __init_subclass__(cls):
+        return super().__init_subclass__()
 
     def __repr__(self):
         return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
@@ -140,18 +142,14 @@ class SpawnPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
-        # TODO: cast not copy
-        sp = SpawnPoint(cell.coords, cell.info)
-        sp.adj = cell.adj
-        sp.chance = cell.chance
-        sp.set_vehicle(cell.vehicle)
-        return sp
+        return SpawnPoint(cell)
 
 class Cellular:
     """
     Cells grid projected on OSM map.
     Stores data in an array of Cells connected with their adj tables.
     """
+    LANEVEC = np.array([0.0001, 0.0001])
     RADIUS = 0.0002
     
     def __init__(self):
@@ -165,13 +163,13 @@ class Cellular:
             v = x.spawn()
             if v is not None:
                 self.agents.append(v)
+        # Clear agents that do not exist on map
         self.agents = [x for x in self.agents if x.cell is not None]
         for x in self.agents:
             if x is None:
                 continue
             x.step()
 
-    # TODO: use constant radius to generate cells
     def build(self, data:OSM):
         """ Construct cellular grid from OSM object """
         # Useful properties:
@@ -187,9 +185,10 @@ class Cellular:
         
     def save(self, path):
         """ Save array to file """
-        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{}} for cell in self.array]
+        for i in range(0,self.array):
+            self.array[i].id = i
+        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{k:cell[k].id for k in cell.adj}} for cell in self.array]
         df = pd.DataFrame(dump)
-        # TODO: build adj dict basing on df index
         df.to_csv(path, sep=';')
 
     def load(self, path):
