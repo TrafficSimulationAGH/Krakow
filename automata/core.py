@@ -103,9 +103,6 @@ class DeadPoint(Cell):
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
 
-    def __init_subclass__(cls):
-        return super().__init_subclass__()
-
     def __repr__(self):
         return '<automata.core.DeadPoint c{0}-{1}>'.format(len(self), self.is_free())
 
@@ -115,7 +112,8 @@ class DeadPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
-        return DeadPoint(cell)
+        cell.__class__ = DeadPoint
+        return cell
 
 class SpawnPoint(Cell):
     """
@@ -126,9 +124,6 @@ class SpawnPoint(Cell):
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
-    
-    def __init_subclass__(cls):
-        return super().__init_subclass__()
 
     def __repr__(self):
         return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
@@ -142,7 +137,8 @@ class SpawnPoint(Cell):
 
     @staticmethod
     def from_cell(cell: Cell):
-        return SpawnPoint(cell)
+        cell.__class__ = SpawnPoint
+        return cell
 
 class Cellular:
     """
