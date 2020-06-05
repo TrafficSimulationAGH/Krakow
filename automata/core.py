@@ -136,7 +136,7 @@ class SpawnPoint(Cell):
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
         if self.is_free() and random() < self.P:
-            self.set_vehicle(Vehicle(2))
+            self.set_vehicle(Vehicle(1))
             return self.vehicle
         return None
 
@@ -182,6 +182,11 @@ class Cellular:
         for i in df.index:
             if 'Line' in df2.loc[i,'type']:
                 self.array += [Cell(c, info=df.loc[i,'properties']) for c in df2.loc[i,'coordinates']]
+                j = len(df2.loc[i,'coordinates'])
+                for c in df2.loc[i,'coordinates']:                    
+                    if j < len(df2.loc[i,'coordinates']):
+                        self.array[-j-1].add(self.array[-j])
+                    j -= 1    
         
     def save(self, path):
         """ Save array to file """
