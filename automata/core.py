@@ -2,7 +2,7 @@
 Core definitions, basic structures.
 """
 from automata.openmap import OSM
-from random import choices
+from random import choices, random
 import numpy as np
 import pandas as pd
 
@@ -23,15 +23,17 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
-        if self.v > 0:
+        if self.v > 1:
             self.v = choices([self.v, self.v-1], [1-self.P, self.P])
 
     def step(self):
         "Move forward"
-        if self.cell.adj['front'].is_free():
-            self.cell.adj['front'].vehicle = self
-            self.cell.vehicle = None
-            self.cell = self.cell.adj['front']
+        # TODO: call randomize
+        # TODO: use other options than front as well
+        # TODO: use speed v
+        if self.cell.exists('front') and self.cell.adj['front'].is_free():
+            self.cell.set_vehicle(None)
+            self.cell['front'].set_vehicle(self)
 
 class Cell:
     """
@@ -76,18 +78,19 @@ class Cell:
         return self.adj[key] is not None
 
     def add(self, cell, key='front', okey='back'):
-        "Add cell under a key"
+        "Add cell under a key. Self is assigned on next cell under okey - to disable use okey=None"
         if self.exists(key):
             self.adj[key].add(cell, key, okey)
         else:
             self.adj[key] = cell
-            cell.adj[okey] = self
+            if okey is not None:
+                cell.adj[okey] = self
 
     def set_vehicle(self, vehicle):
-        "Set pointers for cell and vehicle"
-        if vehicle is not None:
-            vehicle.cell = self
+        "Set pointers for cell and vehicle."
         self.vehicle = vehicle
+        if self.vehicle is not None:
+            self.vehicle.cell = self
 
     def is_free(self):
         "Is cell available"
@@ -100,54 +103,69 @@ class DeadPoint(Cell):
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
 
+    def __repr__(self):
+        return '<automata.core.DeadPoint c{0}-{1}>'.format(len(self), self.is_free())
+
     def set_vehicle(self, vehicle):
         self.vehicle = None
         vehicle.cell = None
-        del vehicle
 
     @staticmethod
     def from_cell(cell: Cell):
-        dp = DeadPoint(cell.coords, cell.info)
-        dp.adj = cell.adj
-        dp.chance = cell.chance
-        return dp
+        cell.__class__ = DeadPoint
+        return cell
 
 class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
     P - probability of spawning
     """
-    P = 0.5
+    P = 0.3
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
 
+    def __repr__(self):
+        return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
+
     def spawn(self):
-        "Spawn a vehicle with a random chance. Only if empty."
-        action = choices([0, 1], [1-self.P, self.P])
-        if self.is_free and action == [1]:
-            vehicle = Vehicle(1)
-            self.set_vehicle(vehicle)
+        "Spawn a vehicle with a random chance. Returns spawned object."
+        if self.is_free() and random() < self.P:
+            self.set_vehicle(Vehicle(1))
+            return self.vehicle
+        return None
 
     @staticmethod
     def from_cell(cell: Cell):
-        sp = SpawnPoint(cell.coords, cell.info)
-        sp.adj = cell.adj
-        sp.chance = cell.chance
-        sp.set_vehicle(cell.vehicle)
-        return sp
+        cell.__class__ = SpawnPoint
+        return cell
 
 class Cellular:
     """
     Cells grid projected on OSM map.
     Stores data in an array of Cells connected with their adj tables.
     """
-    STEP = 0.0002
+    LANEVEC = np.array([0.0001, 0.0001])
+    RADIUS = 0.0002
     
     def __init__(self):
+        self.agents = []
         self.array = []
+        self.spawns = []
 
-    # TODO: use constant step to generate cells
+    def step(self):
+        "Perform simulation step. Call spawners and agents."
+        for x in self.spawns:
+            v = x.spawn()
+            if v is not None:
+                self.agents.append(v)
+        # Clear agents that do not exist on map
+        self.agents = [x for x in self.agents if x.cell is not None]
+        for x in self.agents:
+            if x is None:
+                continue
+            x.step()
+
     def build(self, data:OSM):
         """ Construct cellular grid from OSM object """
         # Useful properties:
@@ -168,9 +186,10 @@ class Cellular:
         
     def save(self, path):
         """ Save array to file """
-        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{}} for cell in self.array]
+        for i in range(0,self.array):
+            self.array[i].id = i
+        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{k:cell[k].id for k in cell.adj}} for cell in self.array]
         df = pd.DataFrame(dump)
-        # TODO: build adj dict basing on df index
         df.to_csv(path, sep=';')
 
     def load(self, path):
