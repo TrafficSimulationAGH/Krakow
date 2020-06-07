@@ -3,21 +3,6 @@ from unittest import TestCase
 from . import mock
 import automata.core as core
 
-class TestCellular(TestCase):
-    def test_build(self):
-        builder = core.Cellular()
-        builder.build(mock.MockJsonMap)
-        self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
-        for b, m in zip(builder.array, mock.MockCellularMap.array):
-            self.assertDictEqual(b.adj, m.adj)
-
-    def test_saveload(self):
-        mock.MockCellularMap.save('temporary.csv')
-        fromfile = core.Cellular()
-        fromfile.load('temporary.csv')
-        self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
-        os.remove('temporary.csv')
-
 class TestCell(TestCase):
     def test_getitem(self):
         x = core.Cell(None)
@@ -69,6 +54,7 @@ class TestVehicle(TestCase):
     def test_step(self):
         road = mock.MockStraightRoad
         car = core.Vehicle(1)
+        car.P = 0.0
         road.set_vehicle(car)
         car.step()
         self.assertTrue(road.is_free())

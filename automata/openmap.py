@@ -3,6 +3,27 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import ArtistAnimation
 import automata.utils as utils
 
+class Coords:
+    """
+    Geographical coordinates.
+    """
+
+    def __init__(self, lat, lon):
+        self.lat = float(lat)
+        self.lon = float(lon)
+
+    def dist(self, other):
+        "Distance to other location"
+        R = 6373000.0
+        dlon = radians(self.lon - other.lon)
+        dlat = radians(self.lat - other.lat)
+        
+        a = sin(dlat / 2)**2 + cos(radians(other.lat)) * cos(radians(self.lat)) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        distance = R * c
+        
+        return round(distance)
+
 class Plotter:
     """
     Plot wrapper for map drawing
@@ -43,27 +64,6 @@ class Plotter:
         "Show map plot"
         plt.show()
         self.fig = None
-
-class Coords:
-    """
-    Geographical coordinates.
-    """
-
-    def __init__(self, lat, lon):
-        self.lat = float(lat)
-        self.lon = float(lon)
-
-    def dist(self, other):
-        "Distance to other location"
-        R = 6373000.0
-        dlon = radians(self.lon - other.lon)
-        dlat = radians(self.lat - other.lat)
-        
-        a = sin(dlat / 2)**2 + cos(radians(other.lat)) * cos(radians(self.lat)) * sin(dlon / 2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        distance = R * c
-        
-        return round(distance)
 
 class OSM:
     """
