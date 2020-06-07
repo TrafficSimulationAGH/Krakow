@@ -134,8 +134,7 @@ class SpawnPoint(Cell):
 
 class Cellular:
     """
-    Cells grid projected on OSM map.
-    Stores data in an array of Cells connected with their adj tables.
+    Simulation runner class.
     RADIUS - distance to another cell
     """
     RADIUS = 3e-4
@@ -158,7 +157,7 @@ class Cellular:
                 continue
             x.step()
 
-    def build(self, data:sm.):
+    def build(self, data:sm.SM):
         """ Construct cellular grid from SM object """
         pass
         
