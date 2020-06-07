@@ -3,6 +3,7 @@ Core definitions, basic structures.
 """
 from automata.openmap import OSM
 from random import choices, random
+import math
 import numpy as np
 import pandas as pd
 
@@ -10,12 +11,10 @@ class Vehicle:
     """
     Static variables:
     V_MAX - maximum speed
-    P - probability of braking/accelerating
-    A - overtaking agression
+    P - probability of braking
     """
     V_MAX = 10
     P = 0.05
-    A = 0.9
 
     def __init__(self, v):
         self.v = v
@@ -24,16 +23,17 @@ class Vehicle:
     def randomize(self):
         "Change variables randomly"
         if self.v > 1:
-            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
+            if random() < self.P:
+                self.v -= 1
+        if self.v < self.V_MAX and random() < self.P:
+            self.v += 1
 
     def step(self):
         "Move forward"
-        # TODO: call randomize
-        # TODO: use other options than front as well
-        # TODO: use speed v
-        if self.cell.exists('front') and self.cell.adj['front'].is_free():
-            self.cell.set_vehicle(None)
-            self.cell['front'].set_vehicle(self)
+        self.randomize()
+        n = self.v
+        while n > 0:
+            n -= 1
 
 class Cell:
     """
@@ -47,10 +47,10 @@ class Cell:
     """
 
     def __init__(self, coords, info=None):
+        self.chance = 1.0
         self.info = {}
         if info is not None:
             self.info = info
-        self.chance = 1.0
         self.coords = np.array(coords)
         self.vehicle = None
         self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
@@ -73,9 +73,36 @@ class Cell:
                 connections += 1
         return connections
 
+    def heading(self):
+        for k in ['front', 'back', 'left', 'right']:
+            if self.exists(k):
+                other = self.adj[k]
+                vector = other.coords - self.coords
+                heading = math.atan2(vector[1], vector[0])
+                if k == 'back':
+                    heading += math.pi
+                elif k == 'right':
+                    heading += math.pi / 2
+                elif k == 'left':
+                    heading -= math.pi / 2
+                return heading
+            else:
+                return 0.0
+
+    def speed_limit(self):
+        # TODO: get limit
+        return 10
+
+    def lanes(self):
+        return int(self.info['lanes'])
+
+    def connections(self):
+        "List of adjacency keys with not None connections"
+        return [k for k in self.adj if self.adj[k] is not None]
+
     def exists(self, key):
         "Check if the cell is linked with another"
-        return self.adj[key] is not None
+        return key in self.connections()
 
     def add(self, cell, key='front', okey='back'):
         "Add cell under a key. Self is assigned on next cell under okey - to disable use okey=None"
@@ -93,8 +120,21 @@ class Cell:
             self.vehicle.cell = self
 
     def is_free(self):
-        "Is cell available"
+        "Checks whether cell contains vehicle"
         return self.vehicle is None
+
+    def copy(self):
+        cell = Cell(self.coords, self.info)
+        cell.adj = self.adj
+        cell.chance = self.chance
+        cell.heading = self.heading
+        cell.__class__ = self.__class__
+        return cell
+
+    @staticmethod
+    def from_point(point):
+        point.__class__ = Cell
+        return point
 
 class DeadPoint(Cell):
     """
@@ -118,9 +158,9 @@ class DeadPoint(Cell):
 class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
-    P - probability of spawning
+
     """
-    P = 0.3
+    RATE = 0.3
 
     def __init__(self, coords, info=None):
         super().__init__(coords, info=info)
@@ -130,7 +170,7 @@ class SpawnPoint(Cell):
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
-        if self.is_free() and random() < self.P:
+        if self.is_free() and random() < self.RATE:
             self.set_vehicle(Vehicle(1))
             return self.vehicle
         return None
@@ -145,8 +185,7 @@ class Cellular:
     Cells grid projected on OSM map.
     Stores data in an array of Cells connected with their adj tables.
     """
-    LANEVEC = np.array([0.0001, 0.0001])
-    RADIUS = 0.0002
+    RADIUS = 1e-4
     
     def __init__(self):
         self.agents = []
@@ -173,23 +212,15 @@ class Cellular:
         # oneway junction
         # maxspeed maxspeed:hgv:conditional overtaking
         # destination destination:lanes destination:symbol:lanes
-        df = pd.DataFrame(data.roads)
-        df2 = pd.DataFrame(data=df['geometry'].tolist(), index=df.index)
-        for i in df.index:
-            if 'Line' in df2.loc[i,'type']:
-                self.array += [Cell(c, info=df.loc[i,'properties']) for c in df2.loc[i,'coordinates']]
-                j = len(df2.loc[i,'coordinates'])
-                for c in df2.loc[i,'coordinates']:                    
-                    if j < len(df2.loc[i,'coordinates']):
-                        self.array[-j-1].add(self.array[-j])
-                    j -= 1    
+        pass
         
     def save(self, path):
         """ Save array to file """
         for i in range(0,self.array):
             self.array[i].id = i
-        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{k:cell[k].id for k in cell.adj}} for cell in self.array]
+        dump = [{'id':cell.id, 'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{k:cell[k].id for k in cell.adj}} for cell in self.array]
         df = pd.DataFrame(dump)
+        df = df.set_index('id')
         df.to_csv(path, sep=';')
 
     def load(self, path):
