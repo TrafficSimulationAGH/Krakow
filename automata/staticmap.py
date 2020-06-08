@@ -5,11 +5,13 @@ import numpy as np
 class Road:
     """
     Road contains points describing road shape.
+    Destination is stored in a tuple.
     Points should be given in clockwise direction.
     """
 
-    def __init__(self, points, lanes=1):
-        self.points = points
+    def __init__(self, start, dest, points, lanes=1):
+        self.destination = (start, dest)
+        self.points = np.array(points)
         self.lanes = lanes
 
     def clockwise(self):
@@ -35,8 +37,14 @@ class SM:
     def load(self, json):
         "Load data from json text"
         self.data = eval(json)
-        pass
+        keys = list(self.data.keys())
+        self.roads = [None] * len(keys)
+        for i in range(0,len(keys)):
+            k = keys[i]
+            a,b = k.split(';')
+            self.roads[i] = Road(a, b, self.data[k]['geometry'], self.data[k]['lanes'])
 
-    def save(self, f):
+    def save(self, fp):
         "Save data to file"
-        pass
+        with open(fp, 'w', encoding='utf-8') as f:
+            f.write(str(self.data))

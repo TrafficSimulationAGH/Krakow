@@ -2,6 +2,7 @@
 Render a map and simulation elements.
 """
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import automata.utils as utils
 import automata.openmap as openmap
 
