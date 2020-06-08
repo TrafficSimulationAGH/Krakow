@@ -26,7 +26,7 @@ class Coords:
         self.lon = float(lon)
 
     def dist(self, other):
-        "Distance to other location"
+        "Distance to other location in meters"
         R = 6373000.0
         dlon = math.radians(self.lon - other.lon)
         dlat = math.radians(self.lat - other.lat)
@@ -38,4 +38,12 @@ class Coords:
         return round(distance)
 
 def vcell2speed(vcell):
-    dst = Coords(0.0, 0.0).dist()
+    "Cell step to km/h"
+    dst = Coords(0.0, 0.0).dist(Coords(CONFIG.RADIUS, 0.0))
+    return 3.6 * dst / CONFIG.TIMESTEP
+
+def speed2vcell(speed):
+    "km/h to cell step"
+    dst = Coords(0.0, 0.0).dist(Coords(CONFIG.RADIUS, 0.0))
+    speed /= 3.6
+    return int(round(speed * CONFIG.TIMESTEP / dst))

@@ -14,7 +14,7 @@ class Vehicle:
     V_MAX - maximum speed (km/h)
     P - probability of braking
     """
-    V_MAX = 150.0
+    V_MAX = 10
     P = 0.05
 
     def __init__(self, v):
