@@ -21,8 +21,8 @@ class SimulationPlotter:
 
     def plot(self):
         self.fig = go.Figure()
-        data = [{'x','y','id','lanes','vehicles','speed_lim'}]
-        df = pd.DataFrame()
+        data = [{'x':x.coords[0],'y':x.coords[1],'id':x.id,'lanes':x.lanes,'vehicles':x.vehicles,'speed_lim':x.speed_lim} for x in self.cells]
+        df = pd.DataFrame(data)
         self.fig.add_trace(go.Scatter(df, mode='markers'))
         return self.fig
 
