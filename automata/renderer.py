@@ -3,7 +3,7 @@ Render a map and simulation elements.
 """
 import pandas as pd
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
+import plotly.express as px
 import automata.utils as utils
 import automata.openmap as openmap
 
@@ -17,14 +17,12 @@ class SimulationPlotter:
     def __init__(self, data):
         self.agents = data.agents
         self.cells = data.array
-        self.fig = None
 
     def plot(self):
-        self.fig = go.Figure()
-        data = [{'x':x.coords[0],'y':x.coords[1],'id':x.id,'lanes':x.lanes,'vehicles':x.vehicles,'speed_lim':x.speed_lim} for x in self.cells]
+        to_dict = lambda x: {'x':x.coords[0],'y':x.coords[1],'id':x.id,'lanes':x.lanes,'density':round(x.vehicles/x.lanes,2),'speed_lim':x.speed_lim}
+        data = [to_dict(x) for x in self.cells]
         df = pd.DataFrame(data)
-        self.fig.add_trace(go.Scatter(df, mode='markers'))
-        return self.fig
+        return px.scatter(df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'])
 
 class OSMPlotter:
     """

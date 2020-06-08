@@ -99,7 +99,8 @@ class Cell:
             self.vehicles += 1
             vehicle.cell = self
         else:
-            self.vehicles -= 1
+            if self.vehicles > 0:
+                self.vehicles -= 1
 
     def copy(self):
         cell = Cell(self.coords, self.lanes, self.speed_lim)
@@ -171,7 +172,7 @@ class Cellular:
             if v is not None:
                 self.agents.append(v)
         # Clear agents that do not exist on map
-        self.agents = [x for x in self.agents if x.is_off()]
+        self.agents = [x for x in self.agents if not x.is_off()]
         for x in self.agents:
             if x is None:
                 continue
