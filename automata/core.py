@@ -1,6 +1,7 @@
 """
 Core definitions, basic structures.
 """
+import automata.utils as utils
 import automata.staticmap as sm
 from random import choices, random
 import math
@@ -10,10 +11,10 @@ import pandas as pd
 class Vehicle:
     """
     Static variables:
-    V_MAX - maximum speed
+    V_MAX - maximum speed (km/h)
     P - probability of braking
     """
-    V_MAX = 10
+    V_MAX = 150.0
     P = 0.05
 
     def __init__(self, v):
@@ -135,10 +136,9 @@ class SpawnPoint(Cell):
 class Cellular:
     """
     Simulation runner class.
-    RADIUS - distance to another cell
+    Loads config: RADIUS.
     """
-    RADIUS = 3e-4
-    
+
     def __init__(self):
         self.agents = []
         self.array = []
@@ -157,7 +157,14 @@ class Cellular:
                 continue
             x.step()
 
+    def offset_lane(self, points, n):
+        "Points moved perpendicularly to create new lane"
+        vec = np.array(points[-1]) - np.array(points[0])
+        heading = math.atan2(vec[1], vec[0]) + math.pi / 2
+        vec = np.array([math.cos(heading), math.sin(heading)]) * utils.CONFIG.RADIUS * n
+        return points + vec
+
     def build(self, data:sm.SM):
-        """ Construct cellular grid from SM object """
+        "Construct cellular grid from SM object"
         pass
         

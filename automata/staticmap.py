@@ -1,4 +1,5 @@
 "Module containing static map definitions"
+import math
 import numpy as np
 
 class Road:
@@ -12,9 +13,11 @@ class Road:
         self.lanes = lanes
 
     def clockwise(self):
+        "Coordinates in clockwise direction"
         return self.points
 
     def anticlockwise(self):
+        "Coordinates in anti-clockwise direction"
         return list(reversed(self.points))
 
 class SM:
