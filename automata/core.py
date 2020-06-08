@@ -1,62 +1,74 @@
 """
 Core definitions, basic structures.
 """
-from automata.openmap import OSM
+import automata.utils as utils
+import automata.simplemap as sm
 from random import choices, random
+import math
 import numpy as np
 import pandas as pd
 
 class Vehicle:
     """
     Static variables:
-    V_MAX - maximum speed
-    P - probability of braking/accelerating
-    A - overtaking agression
+    V_MAX - maximum speed (km/h)
+    SLOW - probability of braking
+    FAST - probability of accelerating
+    LIMIT - probability of matching with speed limit
     """
-    V_MAX = 10
-    P = 0.05
-    A = 0.9
+    V_MAX = 10 # utils.CONFIG.AGENT_VMAX
+    DRIVEOFF = utils.CONFIG.AGENT_DRIVEOFF
+    SLOW = utils.CONFIG.AGENT_SLOW
+    FAST = utils.CONFIG.AGENT_FAST
+    LIMIT = utils.CONFIG.AGENT_LIMIT
 
     def __init__(self, v):
         self.v = v
         self.cell = None
 
+    def is_off(self):
+        "Check whether agent got off map"
+        return self.cell is None
+
     def randomize(self):
         "Change variables randomly"
-        if self.v > 1:
-            self.v = choices([self.v, self.v-1], [1-self.P, self.P])
+        if self.v > 1 and random() < self.SLOW:
+            self.v -= 1
+        elif self.v < self.V_MAX and random() < self.FAST:
+            self.v += 1
+        elif random() < self.LIMIT:
+            self.v = min(self.cell.speed_lim, self.V_MAX)
 
     def step(self):
         "Move forward"
-        # TODO: call randomize
-        # TODO: use other options than front as well
-        # TODO: use speed v
-        if self.cell.exists('front') and self.cell.adj['front'].is_free():
-            self.cell.set_vehicle(None)
-            self.cell['front'].set_vehicle(self)
+        self.randomize()
+        n = self.v
+        while n > 0:
+            n -= 1
+            if self.cell.is_connected() and self.cell.forward.is_free():
+                self.cell.set_vehicle(None)
+                # Next cell is SpawnPoint if a new road starts
+                if type(self.cell.forward) is SpawnPoint and random() < self.DRIVEOFF:
+                    break
+                self.cell.forward.set_vehicle(self)
 
 class Cell:
     """
-    Cell links: front, back, left, right
     Road cell containing information about:
-    - chance of entering (for junctions)
-    - location
-    - vehicle inside
-    - adjacent cells
-    - road information dict
+    - lanes
+    - speed limit
+    - coordinates
+    - vehicles inside
+    - adjacent cells - forward
     """
 
-    def __init__(self, coords, info=None):
-        self.info = {}
-        if info is not None:
-            self.info = info
-        self.chance = 1.0
+    def __init__(self, coords, lanes=1, speed_lim=3):
+        self.id = 0
+        self.lanes = lanes
+        self.speed_lim = speed_lim
         self.coords = np.array(coords)
-        self.vehicle = None
-        self.adj = {'front':None, 'back':None, 'left':None, 'right':None}
-
-    def __getitem__(self, key):
-        return self.adj[key]
+        self.forward = None
+        self.vehicles = 0
 
     def __eq__(self, other):
         if other is None:
@@ -64,50 +76,52 @@ class Cell:
         return (self.coords == other.coords).all()
 
     def __repr__(self):
-        return '<automata.core.Cell c{0}-{1}>'.format(len(self), self.is_free())
+        return '<automata.core.Cell {0} free:{1}>'.format(self.coords, self.is_free())
 
-    def __len__(self):
-        connections = 0
-        for k in self.adj:
-            if self.exists(k):
-                connections += 1
-        return connections
-
-    def exists(self, key):
-        "Check if the cell is linked with another"
-        return self.adj[key] is not None
-
-    def add(self, cell, key='front', okey='back'):
-        "Add cell under a key. Self is assigned on next cell under okey - to disable use okey=None"
-        if self.exists(key):
-            self.adj[key].add(cell, key, okey)
-        else:
-            self.adj[key] = cell
-            if okey is not None:
-                cell.adj[okey] = self
-
-    def set_vehicle(self, vehicle):
-        "Set pointers for cell and vehicle."
-        self.vehicle = vehicle
-        if self.vehicle is not None:
-            self.vehicle.cell = self
+    def is_connected(self):
+        "Checks if forward cell is set"
+        return self.forward is not None
 
     def is_free(self):
-        "Is cell available"
-        return self.vehicle is None
+        "Checks whether cell can accept another vehicle"
+        return self.vehicles < self.lanes
+
+    def append(self, cell):
+        "Set adjacent cell on first None adjacent pointer"
+        if self.forward is None:
+            self.forward = cell
+        else:
+            self.forward.append(cell)
+
+    def set_vehicle(self, vehicle):
+        "Set pointers for cell and vehicle. None reduces counter."
+        if vehicle is not None:
+            self.vehicles += 1
+            vehicle.cell = self
+        else:
+            self.vehicles -= 1
+
+    def copy(self):
+        cell = Cell(self.coords, self.lanes, self.speed_lim)
+        cell.forward = self.forward
+        cell.turn = self.turn
+        cell.__class__ = self.__class__
+        return cell
+
+    @staticmethod
+    def from_point(point):
+        point.__class__ = Cell
+        return point
 
 class DeadPoint(Cell):
     """
     Cell derived class that removes all vehicles that enter it.
     """
-    def __init__(self, coords, info=None):
-        super().__init__(coords, info=info)
-
     def __repr__(self):
-        return '<automata.core.DeadPoint c{0}-{1}>'.format(len(self), self.is_free())
+        return '<automata.core.DeadPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def set_vehicle(self, vehicle):
-        self.vehicle = None
+        self.vehicles = 0
         vehicle.cell = None
 
     @staticmethod
@@ -118,21 +132,19 @@ class DeadPoint(Cell):
 class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
-    P - probability of spawning
+    RATE - probability of spawning
     """
-    P = 0.3
-
-    def __init__(self, coords, info=None):
-        super().__init__(coords, info=info)
+    RATE = 0.3
 
     def __repr__(self):
-        return '<automata.core.SpawnPoint c{0}-{1}>'.format(len(self), self.is_free())
+        return '<automata.core.SpawnPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
-        if self.is_free() and random() < self.P:
-            self.set_vehicle(Vehicle(1))
-            return self.vehicle
+        if self.is_free() and random() < self.RATE:
+            vh = Vehicle(self.speed_lim)
+            self.set_vehicle(vh)
+            return vh
         return None
 
     @staticmethod
@@ -142,12 +154,11 @@ class SpawnPoint(Cell):
 
 class Cellular:
     """
-    Cells grid projected on OSM map.
-    Stores data in an array of Cells connected with their adj tables.
+    Simulation runner class.
+    List of cells, list of agents and list of spawns.
+    Loads config: RADIUS.
     """
-    LANEVEC = np.array([0.0001, 0.0001])
-    RADIUS = 0.0002
-    
+
     def __init__(self):
         self.agents = []
         self.array = []
@@ -160,46 +171,83 @@ class Cellular:
             if v is not None:
                 self.agents.append(v)
         # Clear agents that do not exist on map
-        self.agents = [x for x in self.agents if x.cell is not None]
+        self.agents = [x for x in self.agents if x.is_off()]
         for x in self.agents:
             if x is None:
                 continue
             x.step()
 
-    def build(self, data:OSM):
-        """ Construct cellular grid from OSM object """
-        # Useful properties:
-        # lanes turn:lanes :forward :backward
-        # oneway junction
-        # maxspeed maxspeed:hgv:conditional overtaking
-        # destination destination:lanes destination:symbol:lanes
-        df = pd.DataFrame(data.roads)
-        df2 = pd.DataFrame(data=df['geometry'].tolist(), index=df.index)
-        for i in df.index:
-            if 'Line' in df2.loc[i,'type']:
-                self.array += [Cell(c, info=df.loc[i,'properties']) for c in df2.loc[i,'coordinates']]
-                j = len(df2.loc[i,'coordinates'])
-                for c in df2.loc[i,'coordinates']:                    
-                    if j < len(df2.loc[i,'coordinates']):
-                        self.array[-j-1].add(self.array[-j])
-                    j -= 1    
-        
-    def save(self, path):
-        """ Save array to file """
-        for i in range(0,self.array):
-            self.array[i].id = i
-        dump = [{'info':cell.info, 'coords':cell.coords.tolist(), 'chance':cell.chance, 'adj':{k:cell[k].id for k in cell.adj}} for cell in self.array]
-        df = pd.DataFrame(dump)
-        df.to_csv(path, sep=';')
+    def offset_lane(self, line, n):
+        "Cells coordinates moved perpendicularly to create a new lane"
+        # Estimate heading between first and last cell
+        vec = line[-1] - line[0]
+        heading = math.atan2(vec[1], vec[0]) + math.pi / 2
+        # Offset vector
+        vec = np.array([math.cos(heading), math.sin(heading)]) * utils.CONFIG.RADIUS * n
+        coords = line + np.ones(line.shape) * vec
+        return coords
+    
+    def cells_fill(self, line, lanes=1):
+        "Evenly distribute cells along line coordinates"
+        reg = []
+        dec = 1
+        for i in range(1,len(line)):
+            vec = np.array(line[i]) - np.array(line[i-dec])
+            n = int(round(np.linalg.norm(vec) / utils.CONFIG.RADIUS))
+            if n <= 0:
+                # Cells are too close - try extending range
+                dec += 1
+            else:
+                intercells = np.linspace(line[i-dec], line[i], num=n, endpoint=False)
+                reg += [Cell(coords, lanes) for coords in intercells]
+                dec = 1
+        return reg
 
-    def load(self, path):
-        """ Load map from file """
-        df = pd.read_csv(path, sep=';', index_col=0)
-        self.array = [Cell(eval(x[1]), eval(x[0])) for x in df.values]
+    def reindex(self):
+        "Reindex array elements with id"
         for i in range(0,len(self.array)):
-            self.array[i].chance = df.loc[i,'chance']
-            adj = eval(df.loc[i,'adj'])
-            for k in adj:
-                if k != 'back' and adj[k] is not None:
-                    self.array[i].add(self.array[adj[k]], k)
+            self.array[i].id = i
+
+    def resolve_destination(self, cells_dict):
+        "Connect cells that match start with destination"
+        directions = list(cells_dict.keys())
+        for k in directions:
+            match = -1
+            for x in range(0,len(directions)):
+                if x[0] == k[1]:
+                    match = x
+                    break
+            if match >= 0:
+                match = directions[match]
+                cells_dict[k][-1].append(cells_dict[match][0])
+        return cells_dict
+
+    def build(self, data:sm.SM):
+        "Construct cellular grid from SM object"
+        clockwise = {}
+        anticlock = {}
+        for road in data.roads:
+            # Clockwise road
+            r = road.clockwise()
+            offset = self.offset_lane(r.points, 1)
+            cw = self.cells_fill(offset, lanes=r.lanes)
+            cw[0] = SpawnPoint.from_cell(cw[0])
+            clockwise.update({r.destination: cw})
+            # Anticlockwise road
+            r = road.anticlockwise()
+            acw = self.cells_fill(r.points, lanes=r.lanes)
+            acw[0] = SpawnPoint.from_cell(acw[0])
+            anticlock.update({r.destination: acw})
+        # Connect roads basing on destination
+        clockwise = self.resolve_destination(clockwise)
+        anticlock = self.resolve_destination(anticlock)
+        # To array
+        self.array = []
+        for k in clockwise:
+            self.array += clockwise[k]
+        for k in anticlock:
+            self.array += anticlock[k]
+        # Hurray, retrieve spawnpoints and reindex array
+        self.spawns = [x for x in self.array if type(x) is SpawnPoint]
+        self.reindex()
         

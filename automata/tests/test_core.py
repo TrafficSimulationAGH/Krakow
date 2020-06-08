@@ -3,36 +3,7 @@ from unittest import TestCase
 from . import mock
 import automata.core as core
 
-class TestCellular(TestCase):
-    def test_build(self):
-        builder = core.Cellular()
-        builder.build(mock.MockJsonMap)
-        self.assertSequenceEqual(mock.MockCellularMap.array, builder.array)
-        for b, m in zip(builder.array, mock.MockCellularMap.array):
-            self.assertDictEqual(b.adj, m.adj)
-
-    def test_saveload(self):
-        mock.MockCellularMap.save('temporary.csv')
-        fromfile = core.Cellular()
-        fromfile.load('temporary.csv')
-        self.assertSequenceEqual(fromfile.array, mock.MockCellularMap.array)
-        os.remove('temporary.csv')
-
 class TestCell(TestCase):
-    def test_getitem(self):
-        x = core.Cell(None)
-        x.add(core.Cell(None))
-        self.assertIsNone(x.adj['back'])
-        self.assertIsNotNone(x.adj['front'])
-
-    def test_add(self):
-        x = core.Cell(None)
-        x.add(core.Cell(None))
-        x.add(core.Cell(None))
-        last = x['front']['front']
-        self.assertIsNotNone(last)
-        self.assertIsNone(last['front'])
-
     def test_is_free(self):
         x = core.Cell(None)
         self.assertTrue(x.is_free())
@@ -69,8 +40,9 @@ class TestVehicle(TestCase):
     def test_step(self):
         road = mock.MockStraightRoad
         car = core.Vehicle(1)
+        car.P = 0.0
         road.set_vehicle(car)
         car.step()
         self.assertTrue(road.is_free())
-        self.assertFalse(road['front'].is_free())
-        self.assertTrue(road['front']['front'].is_free())
+        self.assertFalse(road.forward.is_free())
+        self.assertTrue(road.forward.forward.is_free())

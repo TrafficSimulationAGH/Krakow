@@ -2,18 +2,28 @@
 Render a map and simulation elements.
 """
 import matplotlib.pyplot as plt
-from matplotlib.animation import ArtistAnimation
+import plotly.graph_objects as go
 import automata.utils as utils
+import automata.openmap as openmap
 
-class Plotter:
+class SMPlotter:
     """
-    Plot wrapper for map drawing
+    Plot wrapper for Simple Map.
+    Interactive cellular plot.
+    """
+
+    def __init__(self):
+        pass
+
+class OSMPlotter:
+    """
+    Plot wrapper for OSM map drawing
     mapdata - MapData object
     """
+    COLOR = 'b'
 
     def __init__(self, mapdata):
         self.osmap = mapdata
-        self.anim = None
         self.fig = None
         self.ax = None
 
@@ -26,7 +36,7 @@ class Plotter:
             self.ax = self.fig.add_subplot()
         self.ax.set_xlim(*self.osmap.bbox['x'])
         self.ax.set_ylim(*self.osmap.bbox['y'])
-        utils.plot_elements(self.osmap.roads, self.osmap.COLOR)
+        openmap.plot_elements(self.osmap.roads, self.COLOR)
 
     def cell_grid(self, grid):
         "Plot cells depending on its contents"
@@ -34,11 +44,6 @@ class Plotter:
         ln.append(utils.plot_cells(grid, clr='go', ax=self.ax))
         ln.append(utils.plot_cells([x for x in grid if not x.is_free()], clr='ro', ax=self.ax))
         return ln
-
-    def animation(self, cellular):
-        "Show animation"
-        art = self.cell_grid(cellular.array)
-        self.anim = ArtistAnimation(self.fig, art, interval=500, blit=True)
 
     def show(self):
         "Show map plot"

@@ -1,25 +1,5 @@
-from math import sin, cos, sqrt, atan2, radians
-
-class Coords:
-    """
-    Geographical coordinates.
-    """
-
-    def __init__(self, lat, lon):
-        self.lat = float(lat)
-        self.lon = float(lon)
-
-    def dist(self, other):
-        "Distance to other location"
-        R = 6373000.0
-        dlon = radians(self.lon - other.lon)
-        dlat = radians(self.lat - other.lat)
-        
-        a = sin(dlat / 2)**2 + cos(radians(other.lat)) * cos(radians(self.lat)) * sin(dlon / 2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        distance = R * c
-        
-        return round(distance)
+import matplotlib.pyplot as plt
+import automata.utils as utils
 
 class OSM:
     """
@@ -27,7 +7,6 @@ class OSM:
     HIGHWAY defines osm highway filters
     """
     HIGHWAY = ['primary', 'motorway', 'proposed', 'trunk', 'primary_link', 'motorway_link', 'trunk_link', 'give_way', 'motorway_junction']
-    COLOR = 'b'
 
     def __init__(self, jsonfile=None):
         if jsonfile is not None:
@@ -57,3 +36,21 @@ class OSM:
         self.bbox = {'x': (bbox[0], bbox[2]), 'y': (bbox[1], bbox[3])}
         self.roads = data['features']
         self.roads = self.filter(f)
+
+def plot_elements(data, clr='b', ax=None, point='x'):
+    "Plot list of road elements"
+    for road in data:
+        geom = road['geometry']
+        if len(geom['coordinates']) > 0:
+            coords = geom['coordinates']
+            if type(coords[0]) is float:
+                xs = [coords[0]]
+                ys = [coords[1]]
+            else:
+                xs = [i[0] for i in coords]
+                ys = [i[1] for i in coords]
+            mark = '' if len(xs) > 1 else point
+            if ax is None:
+                plt.plot(xs, ys, clr + mark)
+            else:
+                ax.plot(xs, ys, clr + mark)

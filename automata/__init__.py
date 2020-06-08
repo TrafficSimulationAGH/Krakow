@@ -2,17 +2,14 @@
 Automata - a traffic simulation package.
 Imports: numpy, matplotlib
 """
-from . import renderer
 from . import core
 from . import utils
+from . import renderer
+from . import simplemap
+from . import openmap
 
 def main():
-    data = core.OSM('krakow.json')
-    m = renderer.Plotter(data)
-    m.plot()
-    ff = data.filter(lambda i: 'toll' in i['properties'])
-    utils.plot_elements(ff, clr='r', ax=m.ax)
-    m.show()
+    return 0
 
 if __name__ == "__main__":
     main()
