@@ -1,4 +1,4 @@
-"Module with settings and parameters."
+"Automata settings and parameters."
 
 class DefaultConfig:
     """
@@ -6,7 +6,7 @@ class DefaultConfig:
     Radius - cell radius, distance to another cell
     """
     TIMESTEP = 1.0
-    RADIUS = 1e-3
+    RADIUS = 4e-5
     SPAWN_RATE = 0.5
 
     AGENT_DRIVEOFF = 0.3

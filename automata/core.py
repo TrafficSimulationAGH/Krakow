@@ -3,10 +3,9 @@ Core definitions, basic structures.
 """
 import automata.utils as utils
 import automata.simplemap as sm
-from random import choices, random
+from random import random
 import math
 import numpy as np
-import pandas as pd
 
 class Vehicle:
     """
