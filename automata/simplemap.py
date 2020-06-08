@@ -10,17 +10,27 @@ class Road:
     """
 
     def __init__(self, start, dest, points, lanes=1):
+        self.is_clockwise = True
         self.destination = (start, dest)
         self.points = np.array(points)
         self.lanes = lanes
 
+    def _reversed(self):
+        return Road(self.destination[1], self.destination[0], list(reversed(self.points)), self.lanes)
+
     def clockwise(self):
-        "Coordinates in clockwise direction"
-        return self.points
+        "Road in clockwise direction"
+        if self.is_clockwise:
+            return self
+        else:
+            return self._reversed()
 
     def anticlockwise(self):
-        "Coordinates in anti-clockwise direction"
-        return list(reversed(self.points))
+        "Road in anti-clockwise direction"
+        if not self.is_clockwise:
+            return self
+        else:
+            return self._reversed()
 
 class SM:
     """

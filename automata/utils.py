@@ -6,8 +6,14 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+def xy_cells(cells):
+    "Get coords from cells"
+    return np.array([c.coords for c in cells])
+
+
 def plot_cells(cells, clr='ro', ax=None):
-    coords = np.array([np.array(c.coords) for c in cells])
+    "Matplotlib cells plot"
+    coords = xy_cells(cells)
     if len(coords) < 1:
         return None
     if ax is None:

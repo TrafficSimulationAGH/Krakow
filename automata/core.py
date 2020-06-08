@@ -17,6 +17,7 @@ class Vehicle:
     LIMIT - probability of matching with speed limit
     """
     V_MAX = 10 # utils.CONFIG.AGENT_VMAX
+    DRIVEOFF = utils.CONFIG.AGENT_DRIVEOFF
     SLOW = utils.CONFIG.AGENT_SLOW
     FAST = utils.CONFIG.AGENT_FAST
     LIMIT = utils.CONFIG.AGENT_LIMIT
@@ -44,7 +45,12 @@ class Vehicle:
         n = self.v
         while n > 0:
             n -= 1
-            self.cell.forward.is_free()
+            if self.cell.is_connected() and self.cell.forward.is_free():
+                self.cell.set_vehicle(None)
+                # Next cell is SpawnPoint if a new road starts
+                if type(self.cell.forward) is SpawnPoint and random() < self.DRIVEOFF:
+                    break
+                self.cell.forward.set_vehicle(self)
 
 class Cell:
     """
@@ -56,7 +62,8 @@ class Cell:
     - adjacent cells - forward
     """
 
-    def __init__(self, coords, lanes=1, speed_lim=10):
+    def __init__(self, coords, lanes=1, speed_lim=3):
+        self.id = 0
         self.lanes = lanes
         self.speed_lim = speed_lim
         self.coords = np.array(coords)
@@ -135,7 +142,7 @@ class SpawnPoint(Cell):
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
         if self.is_free() and random() < self.RATE:
-            vh = Vehicle(1)
+            vh = Vehicle(self.speed_lim)
             self.set_vehicle(vh)
             return vh
         return None
@@ -148,6 +155,7 @@ class SpawnPoint(Cell):
 class Cellular:
     """
     Simulation runner class.
+    List of cells, list of agents and list of spawns.
     Loads config: RADIUS.
     """
 
@@ -169,9 +177,8 @@ class Cellular:
                 continue
             x.step()
 
-    def offset_lane(self, cells, n):
+    def offset_lane(self, line, n):
         "Cells coordinates moved perpendicularly to create a new lane"
-        line = np.array([c.coords for c in cells])
         # Estimate heading between first and last cell
         vec = line[-1] - line[0]
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2
@@ -196,7 +203,32 @@ class Cellular:
                 dec = 1
         return reg
 
+    def reindex(self):
+        "Reindex array elements with id"
+        for i in range(0,len(self.array)):
+            self.array[i].id = i
+
     def build(self, data:sm.SM):
         "Construct cellular grid from SM object"
-        pass
+        clockwise = {}
+        anticlock = {}
+        for road in data.roads:
+            # Clockwise road
+            r = road.clockwise()
+            offset = self.offset_lane(r.points, 1)
+            cw = self.cells_fill(offset, lanes=r.lanes)
+            cw[0] = SpawnPoint.from_cell(cw[0])
+            clockwise.update({r.destination: cw})
+            # Anticlockwise road
+            r = road.anticlockwise()
+            acw = self.cells_fill(r.points, lanes=r.lanes)
+            acw[0] = SpawnPoint.from_cell(acw[0])
+            anticlock.update({r.destination: acw})
+        # Connect roads basing on destination
+        directions = list(clockwise.keys())
+        #for k in directions:
+            #clockwise[k]
+        # Hurray, retrieve spawnpoints and reindex array
+        self.spawns = [x for x in self.array if type(x) is SpawnPoint]
+        self.reindex()
         
