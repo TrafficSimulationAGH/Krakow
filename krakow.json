@@ -1,6 +1,7 @@
 {
 	"Balice I;Modlniczka": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 120,
 		"geometry": [
 			[19.807,50.0867],
 			[19.8232,50.0966],
@@ -9,7 +10,8 @@
 		]
 	},
 	"Modlniczka;Modlnica": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 100,
 		"geometry": [
 			[19.8415,50.1073],
 			[19.848,50.1124],
@@ -19,7 +21,8 @@
 		]
 	},
 	"Modlnica;Kraków Północ": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 120,
 		"geometry": [
 			[19.8685,50.1187],
 			[19.8936,50.1195],
@@ -32,7 +35,8 @@
 		]
 	},
 	"Kraków Północ;Kraków Nowa Huta": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 120,
 		"geometry": [
 			[20.0300,50.0996],
 			[20.0333,50.0944],
@@ -44,6 +48,7 @@
 	},
 	"Kraków Nowa Huta;Kraków Przewóz": {
 		"lanes": 3,
+		"maxspeed": 120,
 		"geometry": [
 			[20.0732,50.0638],
 			[20.0749,50.0564],
@@ -52,6 +57,7 @@
 	},
 	"Kraków Przewóz;Kraków Bieżanów": {
 		"lanes": 3,
+		"maxspeed": 120,
 		"geometry": [
 			[20.0645,50.038],
 			[20.0634,50.0133]
@@ -59,6 +65,7 @@
 	},
 	"Kraków Bieżanów;Kraków Wieliczka": {
 		"lanes": 3,
+		"maxspeed": 140,
 		"geometry": [
 			[20.0634,50.0133],
 			[20.0541,50.0071],
@@ -67,6 +74,7 @@
 	},
 	"Kraków Wieliczka;Kraków Łagiewniki": {
 		"lanes": 3,
+		"maxspeed": 140,
 		"geometry": [
 			[20.0206,50.0048],
 			[19.997,50.0008],
@@ -76,7 +84,8 @@
 		]
 	},
 	"Kraków Łagiewniki;Kraków Południe": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 140,
 		"geometry": [
 			[19.9404,50.0008],
 			[19.93,49.9989],
@@ -85,7 +94,8 @@
 		]
 	},
 	"Kraków Południe;Kraków Skawina": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 140,
 		"geometry": [
 			[19.9173,49.9919],
 			[19.8959,49.9901],
@@ -93,7 +103,8 @@
 		]
 	},
 	"Kraków Skawina;Kraków Tyniec": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 140,
 		"geometry": [
 			[19.8567,49.9967],
 			[19.8509,50.0082],
@@ -103,14 +114,16 @@
 		]
 	},
 	"Kraków Tyniec;Kraków Bielany": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 140,
 		"geometry": [
 			[19.8301,50.02],
 			[19.8151,50.034]
 		]
 	},
 	"Kraków Bielany;Kraków Balice": {
-		"lanes": 3,
+		"lanes": 2,
+		"maxspeed": 140,
 		"geometry": [
 			[19.8151,50.034],
 			[19.8082,50.0428],
@@ -121,6 +134,7 @@
 	},
 	"Kraków Balice;Balice I": {
 		"lanes": 3,
+		"maxspeed": 140,
 		"geometry": [
 			[19.8099,50.0723],
 			[19.807,50.0867]
