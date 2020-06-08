@@ -212,13 +212,12 @@ class Cellular:
         "Connect cells that match start with destination"
         directions = list(cells_dict.keys())
         for k in directions:
-            match = -1
-            for x in range(0,len(directions)):
+            match = None
+            for x in directions:
                 if x[0] == k[1]:
                     match = x
                     break
-            if match >= 0:
-                match = directions[match]
+            if match is not None:
                 cells_dict[k][-1].append(cells_dict[match][0])
         return cells_dict
 
