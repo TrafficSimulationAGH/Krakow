@@ -1,4 +1,4 @@
-"Module containing static map definitions"
+"Module containing simple map definitions"
 import math
 import numpy as np
 
@@ -24,7 +24,7 @@ class Road:
 
 class SM:
     """
-    Static Map - contains information about roads on map.
+    Simple Map - contains information about roads on map.
     Allows loading from file.
     """
 

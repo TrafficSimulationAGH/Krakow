@@ -2,7 +2,7 @@
 Core definitions, basic structures.
 """
 import automata.utils as utils
-import automata.staticmap as sm
+import automata.simplemap as sm
 from random import choices, random
 import math
 import numpy as np
@@ -163,6 +163,22 @@ class Cellular:
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2
         vec = np.array([math.cos(heading), math.sin(heading)]) * utils.CONFIG.RADIUS * n
         return points + vec
+    
+    def cells_fill(self, line):
+        "Evenly distribute cells along line coordinates"
+        reg = []
+        dec = 1
+        for i in range(1,len(line)):
+            vec = np.array(line[i]) - np.array(line[i-dec])
+            n = int(round(np.linalg.norm(vec) / utils.CONFIG.RADIUS))
+            if n <= 0:
+                # Cells are too close - try extending range
+                dec += 1
+            else:
+                intercells = np.linspace(line[i-dec], line[i], num=n, endpoint=False)
+                reg += [Cell(coords) for coords in intercells]
+                dec = 1
+        return reg
 
     def build(self, data:sm.SM):
         "Construct cellular grid from SM object"

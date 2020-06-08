@@ -8,7 +8,7 @@ import automata.openmap as openmap
 
 class SMPlotter:
     """
-    Plot wrapper for StaticMap.
+    Plot wrapper for Simple Map.
     Interactive cellular plot.
     """
 

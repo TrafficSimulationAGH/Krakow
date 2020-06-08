@@ -5,7 +5,7 @@ Imports: numpy, matplotlib
 from . import core
 from . import utils
 from . import renderer
-from . import staticmap
+from . import simplemap
 from . import openmap
 
 def main():
