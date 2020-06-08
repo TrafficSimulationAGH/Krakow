@@ -15,7 +15,7 @@ class Vehicle:
     FAST - probability of accelerating
     LIMIT - probability of matching with speed limit
     """
-    V_MAX = 10 # utils.CONFIG.AGENT_VMAX
+    V_MAX = utils.CONFIG.AGENT_VMAX
     DRIVEOFF = utils.CONFIG.AGENT_DRIVEOFF
     SLOW = utils.CONFIG.AGENT_SLOW
     FAST = utils.CONFIG.AGENT_FAST
@@ -31,12 +31,13 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
+        vmax = utils.speed2vcell(self.V_MAX)
         if self.v > 1 and random() < self.SLOW:
             self.v -= 1
-        elif self.v < self.V_MAX and random() < self.FAST:
+        elif self.v < vmax and random() < self.FAST:
             self.v += 1
         elif random() < self.LIMIT:
-            self.v = min(self.cell.speed_lim, self.V_MAX)
+            self.v = min(self.cell.speed_lim, vmax)
 
     def step(self):
         "Move forward"
@@ -61,10 +62,10 @@ class Cell:
     - adjacent cells - forward
     """
 
-    def __init__(self, coords, lanes=1, speed_lim=3):
+    def __init__(self, coords, lanes=1, speed_lim=140.0):
         self.id = 0
         self.lanes = lanes
-        self.speed_lim = speed_lim
+        self.speed_lim = utils.speed2vcell(speed_lim)
         self.coords = np.array(coords)
         self.forward = None
         self.vehicles = 0
@@ -75,7 +76,7 @@ class Cell:
         return (self.coords == other.coords).all()
 
     def __repr__(self):
-        return '<automata.core.Cell {0} free:{1}>'.format(self.coords, self.is_free())
+        return '<Cell {0} free:{1}>'.format(self.coords, self.is_free())
 
     def is_connected(self):
         "Checks if forward cell is set"
@@ -118,7 +119,7 @@ class DeadPoint(Cell):
     Cell derived class that removes all vehicles that enter it.
     """
     def __repr__(self):
-        return '<automata.core.DeadPoint {0} free:{1}>'.format(self.coords, self.is_free())
+        return '<DeadPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def set_vehicle(self, vehicle):
         self.vehicles = 0
@@ -132,12 +133,13 @@ class DeadPoint(Cell):
 class SpawnPoint(Cell):
     """
     Cell derived class that populates itself with vehicles.
+    Loads config SPAWN_RATE as default RATE.
     RATE - probability of spawning
     """
-    RATE = 0.3
+    RATE = utils.CONFIG.SPAWN_RATE
 
     def __repr__(self):
-        return '<automata.core.SpawnPoint {0} free:{1}>'.format(self.coords, self.is_free())
+        return '<SpawnPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
@@ -179,6 +181,7 @@ class Cellular:
 
     def offset_lane(self, line, n):
         "Cells coordinates moved perpendicularly to create a new lane"
+        n += 5 * n / abs(n)
         # Estimate heading between first and last cell
         vec = line[-1] - line[0]
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2

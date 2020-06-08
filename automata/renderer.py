@@ -26,7 +26,6 @@ class CellularPlotter:
     # TODO: animated plot
 
     def __init__(self, data):
-        self.agents = data.agents
         self.cells = data.array
 
     def plot(self):
