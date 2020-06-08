@@ -41,15 +41,16 @@ class Coords:
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = R * c
         
-        return round(distance)
+        return distance
 
 def vcell2speed(vcell):
     "Cell step to km/h"
-    dst = Coords(0.0, 0.0).dist(Coords(CONFIG.RADIUS, 0.0))
+    dlat = vcell * CONFIG.RADIUS
+    dst = Coords(20.0, 50.0).dist(Coords(20 + dlat, 50.0))
     return 3.6 * dst / CONFIG.TIMESTEP
 
 def speed2vcell(speed):
     "km/h to cell step"
-    dst = Coords(0.0, 0.0).dist(Coords(CONFIG.RADIUS, 0.0))
+    dst = Coords(20.0, 50.0).dist(Coords(20 + CONFIG.RADIUS, 50.0))
     speed /= 3.6
     return int(round(speed * CONFIG.TIMESTEP / dst))
