@@ -1,24 +1,34 @@
 """
 Render a map and simulation elements.
 """
+import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import automata.utils as utils
 import automata.openmap as openmap
 
-class SMPlotter:
+class SimulationPlotter:
     """
-    Plot wrapper for Simple Map.
-    Interactive cellular plot.
+    Plot wrapper for simulation cells.
+    Interactive plotly graph.
+    data - Cellular object
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.agents = data.agents
+        self.cells = data.array
+        self.fig = None
+
+    def plot(self):
+        self.fig = go.Figure()
+        cells = utils.xy_cells(self.cells)
+        self.fig.add_trace(go.Scatter(x=cells.T[0], y=cells.T[1], mode='markers'))
+        return self.fig
 
 class OSMPlotter:
     """
     Plot wrapper for OSM map drawing
-    mapdata - MapData object
+    mapdata - OpenStreetMap object
     """
     COLOR = 'b'
 
