@@ -21,7 +21,7 @@
 		]
 	},
 	"Modlnica;Kraków Północ": {
-		"lanes": 2,
+		"lanes": 3,
 		"maxspeed": 120,
 		"geometry": [
 			[19.8685,50.1187],
@@ -35,7 +35,7 @@
 		]
 	},
 	"Kraków Północ;Kraków Nowa Huta": {
-		"lanes": 2,
+		"lanes": 3,
 		"maxspeed": 120,
 		"geometry": [
 			[20.0300,50.0996],
