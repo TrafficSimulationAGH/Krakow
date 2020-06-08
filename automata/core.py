@@ -201,6 +201,8 @@ class Cellular:
                 intercells = np.linspace(line[i-dec], line[i], num=n, endpoint=False)
                 reg += [Cell(coords, lanes) for coords in intercells]
                 dec = 1
+        for i in range(1,len(reg)):
+            reg[i-1].append(reg[i])
         return reg
 
     def reindex(self):

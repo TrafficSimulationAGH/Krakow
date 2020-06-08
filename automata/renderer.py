@@ -21,8 +21,9 @@ class SimulationPlotter:
 
     def plot(self):
         self.fig = go.Figure()
-        cells = utils.xy_cells(self.cells)
-        self.fig.add_trace(go.Scatter(x=cells.T[0], y=cells.T[1], mode='markers'))
+        data = [{'x','y','id','lanes','vehicles','speed_lim'}]
+        df = pd.DataFrame()
+        self.fig.add_trace(go.Scatter(df, mode='markers'))
         return self.fig
 
 class OSMPlotter:
