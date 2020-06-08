@@ -12,22 +12,30 @@ class Vehicle:
     """
     Static variables:
     V_MAX - maximum speed (km/h)
-    P - probability of braking
+    SLOW - probability of braking
+    FAST - probability of accelerating
+    LIMIT - probability of matching with speed limit
     """
-    V_MAX = 10
-    P = 0.05
+    V_MAX = 10 # utils.CONFIG.AGENT_VMAX
+    SLOW = utils.CONFIG.AGENT_SLOW
+    FAST = utils.CONFIG.AGENT_FAST
+    LIMIT = utils.CONFIG.AGENT_LIMIT
 
     def __init__(self, v):
         self.v = v
         self.cell = None
 
+    def is_off(self):
+        "Check whether agent got off map"
+        return self.cell is None
+
     def randomize(self):
         "Change variables randomly"
-        if self.v > 1 and random() < self.P:
+        if self.v > 1 and random() < self.SLOW:
             self.v -= 1
-        elif self.v < self.V_MAX and random() < self.P:
+        elif self.v < self.V_MAX and random() < self.FAST:
             self.v += 1
-        elif random() < self.P:
+        elif random() < self.LIMIT:
             self.v = min(self.cell.speed_lim, self.V_MAX)
 
     def step(self):
@@ -36,6 +44,7 @@ class Vehicle:
         n = self.v
         while n > 0:
             n -= 1
+            self.cell.forward.is_free()
 
 class Cell:
     """
@@ -43,16 +52,16 @@ class Cell:
     - lanes
     - speed limit
     - coordinates
-    - vehicle
-    - adjacent cell
+    - vehicles inside
+    - adjacent cells - forward
     """
 
     def __init__(self, coords, lanes=1, speed_lim=10):
         self.lanes = lanes
         self.speed_lim = speed_lim
         self.coords = np.array(coords)
-        self.adj = None
-        self.vehicle = None
+        self.forward = None
+        self.vehicles = 0
 
     def __eq__(self, other):
         if other is None:
@@ -60,33 +69,35 @@ class Cell:
         return (self.coords == other.coords).all()
 
     def __repr__(self):
-        return '<automata.core.Cell {0} {1}>'.format(self.coords, self.is_free())
+        return '<automata.core.Cell {0} free:{1}>'.format(self.coords, self.is_free())
 
-    def heading(self):
-        if self.adj is not None:
-            vector = self.adj.coords - self.coords
-            return math.atan2(vector[1], vector[0])
+    def is_connected(self):
+        "Checks if forward cell is set"
+        return self.forward is not None
+
+    def is_free(self):
+        "Checks whether cell can accept another vehicle"
+        return self.vehicles < self.lanes
 
     def append(self, cell):
         "Set adjacent cell on first None adjacent pointer"
-        if self.adj is None:
-            self.adj = cell
+        if self.forward is None:
+            self.forward = cell
         else:
-            self.adj.append(cell)
+            self.forward.append(cell)
 
     def set_vehicle(self, vehicle):
-        "Set pointers for cell and vehicle."
-        self.vehicle = vehicle
-        if self.vehicle is not None:
-            self.vehicle.cell = self
-
-    def is_free(self):
-        "Checks whether cell contains vehicle"
-        return self.vehicle is None
+        "Set pointers for cell and vehicle. None reduces counter."
+        if vehicle is not None:
+            self.vehicles += 1
+            vehicle.cell = self
+        else:
+            self.vehicles -= 1
 
     def copy(self):
         cell = Cell(self.coords, self.lanes, self.speed_lim)
-        cell.adj = self.adj
+        cell.forward = self.forward
+        cell.turn = self.turn
         cell.__class__ = self.__class__
         return cell
 
@@ -100,10 +111,10 @@ class DeadPoint(Cell):
     Cell derived class that removes all vehicles that enter it.
     """
     def __repr__(self):
-        return '<automata.core.DeadPoint {0} {1}>'.format(self.coords, self.is_free())
+        return '<automata.core.DeadPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def set_vehicle(self, vehicle):
-        self.vehicle = None
+        self.vehicles = 0
         vehicle.cell = None
 
     @staticmethod
@@ -119,13 +130,14 @@ class SpawnPoint(Cell):
     RATE = 0.3
 
     def __repr__(self):
-        return '<automata.core.SpawnPoint {0} {1}>'.format(self.coords, self.is_free())
+        return '<automata.core.SpawnPoint {0} free:{1}>'.format(self.coords, self.is_free())
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
         if self.is_free() and random() < self.RATE:
-            self.set_vehicle(Vehicle(1))
-            return self.vehicle
+            vh = Vehicle(1)
+            self.set_vehicle(vh)
+            return vh
         return None
 
     @staticmethod
@@ -151,20 +163,24 @@ class Cellular:
             if v is not None:
                 self.agents.append(v)
         # Clear agents that do not exist on map
-        self.agents = [x for x in self.agents if x.cell is not None]
+        self.agents = [x for x in self.agents if x.is_off()]
         for x in self.agents:
             if x is None:
                 continue
             x.step()
 
-    def offset_lane(self, points, n):
-        "Points moved perpendicularly to create new lane"
-        vec = np.array(points[-1]) - np.array(points[0])
+    def offset_lane(self, cells, n):
+        "Cells coordinates moved perpendicularly to create a new lane"
+        line = np.array([c.coords for c in cells])
+        # Estimate heading between first and last cell
+        vec = line[-1] - line[0]
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2
+        # Offset vector
         vec = np.array([math.cos(heading), math.sin(heading)]) * utils.CONFIG.RADIUS * n
-        return points + vec
+        coords = line + np.ones(line.shape) * vec
+        return coords
     
-    def cells_fill(self, line):
+    def cells_fill(self, line, lanes=1):
         "Evenly distribute cells along line coordinates"
         reg = []
         dec = 1
@@ -176,7 +192,7 @@ class Cellular:
                 dec += 1
             else:
                 intercells = np.linspace(line[i-dec], line[i], num=n, endpoint=False)
-                reg += [Cell(coords) for coords in intercells]
+                reg += [Cell(coords, lanes) for coords in intercells]
                 dec = 1
         return reg
 

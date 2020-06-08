@@ -4,20 +4,6 @@ from . import mock
 import automata.core as core
 
 class TestCell(TestCase):
-    def test_getitem(self):
-        x = core.Cell(None)
-        x.add(core.Cell(None))
-        self.assertIsNone(x.adj['back'])
-        self.assertIsNotNone(x.adj['front'])
-
-    def test_add(self):
-        x = core.Cell(None)
-        x.add(core.Cell(None))
-        x.add(core.Cell(None))
-        last = x['front']['front']
-        self.assertIsNotNone(last)
-        self.assertIsNone(last['front'])
-
     def test_is_free(self):
         x = core.Cell(None)
         self.assertTrue(x.is_free())
@@ -58,5 +44,5 @@ class TestVehicle(TestCase):
         road.set_vehicle(car)
         car.step()
         self.assertTrue(road.is_free())
-        self.assertFalse(road['front'].is_free())
-        self.assertTrue(road['front']['front'].is_free())
+        self.assertFalse(road.forward.is_free())
+        self.assertTrue(road.forward.forward.is_free())
