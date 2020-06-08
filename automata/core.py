@@ -208,6 +208,20 @@ class Cellular:
         for i in range(0,len(self.array)):
             self.array[i].id = i
 
+    def resolve_destination(self, cells_dict):
+        "Connect cells that match start with destination"
+        directions = list(cells_dict.keys())
+        for k in directions:
+            match = -1
+            for x in range(0,len(directions)):
+                if x[0] == k[1]:
+                    match = x
+                    break
+            if match >= 0:
+                match = directions[match]
+                cells_dict[k][-1].append(cells_dict[match][0])
+        return cells_dict
+
     def build(self, data:sm.SM):
         "Construct cellular grid from SM object"
         clockwise = {}
@@ -225,9 +239,14 @@ class Cellular:
             acw[0] = SpawnPoint.from_cell(acw[0])
             anticlock.update({r.destination: acw})
         # Connect roads basing on destination
-        directions = list(clockwise.keys())
-        #for k in directions:
-            #clockwise[k]
+        clockwise = self.resolve_destination(clockwise)
+        anticlock = self.resolve_destination(anticlock)
+        # To array
+        self.array = []
+        for k in clockwise:
+            self.array += clockwise[k]
+        for k in anticlock:
+            self.array += anticlock[k]
         # Hurray, retrieve spawnpoints and reindex array
         self.spawns = [x for x in self.array if type(x) is SpawnPoint]
         self.reindex()
