@@ -1,24 +1,18 @@
 """
 Mock data for unit tests.
 """
+import os.path
 import numpy as np
-from automata.core import Cell, OSM, Cellular
+from automata.core import Cell, Cellular
 
-def npy2cells():
-    npy = np.load('automata/tests/mock.npy', allow_pickle=True)
-    cells = []
-    for x in npy:
-        if type(x[1]['coordinates'][0]) is float:
-            cells.append(Cell(x[1]['coordinates'], info=x[0]))
-        else:
-            cells += [Cell(c, info=x[0]) for c in x[1]['coordinates']]
-    return cells
+def tests_path(path):
+    if os.path.exists(path):
+        return path
+    else:
+        return f"automata/tests/{path}"
 
 MockCellularMap = Cellular()
-MockCellularMap.array = npy2cells()
 
-MockJsonMap = OSM('automata/tests/mock.json')
-
-MockStraightRoad = Cell(None)
-MockStraightRoad.add(Cell(None))
-MockStraightRoad.add(Cell(None))
+MockStraightRoad = Cell([])
+MockStraightRoad.add(Cell([]))
+MockStraightRoad.add(Cell([]))
