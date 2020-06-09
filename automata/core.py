@@ -188,7 +188,6 @@ class Cellular:
 
     def offset_lane(self, line, n):
         "Cells coordinates moved perpendicularly to create a new lane"
-        n += 5 * n / abs(n)
         # Estimate heading between first and last cell
         vec = line[-1] - line[0]
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2
@@ -246,7 +245,7 @@ class Cellular:
             clockwise.update({r.destination: cw})
             # Anticlockwise road
             r = road.anticlockwise()
-            offset = self.offset_lane(r.points, -1)
+            offset = self.offset_lane(r.points, -5)
             acw = self.cells_fill(offset, lanes=r.lanes)
             acw[0] = SpawnPoint.from_cell(acw[0])
             acw[-1] = EndPoint.from_cell(acw[-1])
