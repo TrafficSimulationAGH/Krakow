@@ -17,7 +17,7 @@ class Stat:
         if self.agent_log is not None:
             self.agent_log.to_csv(f'agent.{fpath}', sep=';')
 
-    def log_cells(self, cell_array):
+    def log_cells(self, cell_array, it):
         "Log cells state."
         update = [cell2dict(x) for x in cell_array]
         if len(update) > 0:
@@ -26,7 +26,7 @@ class Stat:
             else:
                 self.cell_log = self.cell_log.append(update, ignore_index=True)
 
-    def log_agents(self, agent_array):
+    def log_agents(self, agent_array, it):
         "Log agents state."
         update = [agent2dict(x) for x in agent_array]
         if len(update) > 0:
@@ -36,9 +36,9 @@ class Stat:
                 self.agent_log = self.agent_log.append(update, ignore_index=True)
 
     def append(self, cellular):
-        "Append logs row."
-        self.log_cells(cellular.array)
-        self.log_agents(cellular.agents)
+        "Append logs row to DataFrames."
+        self.log_cells(cellular.array, cellular.iteration)
+        self.log_agents(cellular.agents, cellular.iteration)
 
 def cell2dict(cell, iteration=0):
     return {

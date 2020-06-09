@@ -3,7 +3,7 @@ Core definitions, basic structures.
 """
 import automata.utils
 import automata.simplemap
-#import automata.stats
+import automata.stats
 from random import random
 import math
 import numpy as np
@@ -161,6 +161,7 @@ class Cellular:
         self.agents = []
         self.array = []
         self.spawns = []
+        self.stat = automata.stats.Stat()
 
     def step(self):
         "Perform simulation step. Call spawners and agents."
@@ -175,6 +176,8 @@ class Cellular:
             if x is None:
                 continue
             x.step()
+        if self.stat is not None:
+            self.stat.append(self)
 
     def offset_lane(self, line, n):
         "Cells coordinates moved perpendicularly to create a new lane"
