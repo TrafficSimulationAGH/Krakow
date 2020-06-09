@@ -53,14 +53,16 @@ class LastCellStat(CellStat):
         update = self.extract(cellular)
         if len(update) > 0:
             if self._stored < 1:
-                self.log = pd.DataFrame(update)
                 self._stored = 1
+                self.log = pd.DataFrame(update)
             elif self._stored < self.size:
+                self._stored += 1
                 self.log = self.log.append(update, ignore_index=True)
             else:
                 m = self.log['iteration'].min()
-                m = self.log[self.log['iteration'] == m].index.max()
-                self.log = self.log.append(update, ignore_index=True).loc[m:]
+                m = self.log[self.log['iteration'] == m].index
+                self.log = self.log.drop(m)
+                self.log = self.log.append(update, ignore_index=True)
 
 class AgentStat(Stat):
     "Log agent state into a dataframe."
@@ -84,7 +86,7 @@ def cell2dict(cell, iteration=0):
 def agent2dict(agent, iteration=0):
     return {
         'id': agent.cell.id,
-        'v': agent.v,
-        'km/h': automata.utils.vcell2speed(agent.v),
+        'v': agent.travelled,
+        'km/h': automata.utils.vcell2speed(agent.travelled),
         'iteration': iteration
     }

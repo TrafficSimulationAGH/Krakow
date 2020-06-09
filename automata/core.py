@@ -10,6 +10,8 @@ import numpy as np
 
 class Vehicle:
     """
+    Vehicle objects move forward the cells measuring
+    travelled distance in a single step.
     Static variables:
     V_MAX - maximum speed (km/h)
     SLOW - probability of braking
@@ -24,6 +26,7 @@ class Vehicle:
 
     def __init__(self, v):
         self.v = max(v, 1)
+        self.travelled = 0
         self.cell = None
 
     def is_off(self):
@@ -53,6 +56,7 @@ class Vehicle:
                     # Exit road
                     break
                 self.cell.forward.set_vehicle(self)
+        self.travelled = self.v - n
 
 class Cell:
     """
