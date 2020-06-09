@@ -11,17 +11,25 @@ from . import simplemap
 from . import openmap
 
 def main():
-    utils.CONFIG.RADIUS = 1e-4
+    # Reduce resolution
+    utils.CONFIG.RADIUS = 2e-4
+    # Initiate simulation
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
     cellular.build(sm)
     cstat = stats.CellStat()
     astat = stats.AgentStat('agent.log')
-    for i in range(0,100):
+    # Simulate
+    for i in range(0,200):
         cellular.step([cstat, astat])
-    log = cstat.log[cstat.log['iteration'] > 90]
+    log = cstat.log[cstat.log['iteration'] > 150]
+    # Plot map
     plotter = renderer.CellularPlotter(log)
     fig = plotter.plot()
+    fig.show()
+    # Plot metrics
+    metrics = renderer.AgentPlotter(astat.log)
+    fig = metrics.plot()
     fig.show()
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ class Vehicle:
     LIMIT = automata.utils.CONFIG.AGENT_LIMIT
 
     def __init__(self, v):
-        self.v = v
+        self.v = max(v, 1)
         self.cell = None
 
     def is_off(self):
@@ -39,6 +39,7 @@ class Vehicle:
             self.v += 1
         elif random() < self.LIMIT:
             self.v = min(self.cell.speed_lim, vmax)
+        self.v = max(self.v, 1)
 
     def step(self):
         "Move forward"
@@ -245,7 +246,7 @@ class Cellular:
             clockwise.update({r.destination: cw})
             # Anticlockwise road
             r = road.anticlockwise()
-            offset = self.offset_lane(r.points, 1)
+            offset = self.offset_lane(r.points, -1)
             acw = self.cells_fill(offset, lanes=r.lanes)
             acw[0] = SpawnPoint.from_cell(acw[0])
             acw[-1] = EndPoint.from_cell(acw[-1])
