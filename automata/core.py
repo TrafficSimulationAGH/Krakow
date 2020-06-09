@@ -49,8 +49,8 @@ class Vehicle:
             n -= 1
             if self.cell.is_connected() and self.cell.forward.is_free():
                 self.cell.set_vehicle(None)
-                # Next cell is SpawnPoint if a new road starts
-                if type(self.cell.forward) is SpawnPoint and random() < self.DRIVEOFF:
+                if type(self.cell) is EndPoint and random() < self.DRIVEOFF:
+                    # Exit road
                     break
                 self.cell.forward.set_vehicle(self)
 
@@ -66,6 +66,7 @@ class Cell:
     TYPE = 'Cell'
 
     def __init__(self, coords, lanes=1, speed_lim=140.0):
+        self.destination = None
         self.id = 0
         self.lanes = lanes
         self.speed_lim = automata.utils.speed2vcell(speed_lim)
@@ -162,6 +163,7 @@ class Cellular:
         self.agents = []
         self.array = []
         self.spawns = []
+        self.ends = []
 
     def step(self, stats=None):
         """
@@ -223,6 +225,10 @@ class Cellular:
         "Connect cells that match start with destination"
         directions = list(cells_dict.keys())
         for k in directions:
+            # Save to destination
+            for c in cells_dict[k]:
+                c.destination = k
+            # Connect End with Spawn
             match = None
             for x in directions:
                 if x[0] == k[1]:
@@ -259,7 +265,8 @@ class Cellular:
             self.array += clockwise[k]
         for k in anticlock:
             self.array += anticlock[k]
-        # Hurray, retrieve spawnpoints and reindex array
+        # Hurray, retrieve points and reindex array
         self.spawns = [x for x in self.array if type(x) is SpawnPoint]
+        self.ends = [x for x in self.array if type(x) is EndPoint]
         self.reindex()
         

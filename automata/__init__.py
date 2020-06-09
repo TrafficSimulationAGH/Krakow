@@ -13,6 +13,7 @@ from . import openmap
 def main():
     # Reduce resolution
     utils.CONFIG.RADIUS = 2e-4
+    utils.CONFIG.TIMESTEP = 5.0
     # Initiate simulation
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
@@ -24,11 +25,11 @@ def main():
         cellular.step([cstat, astat])
     log = cstat.log[cstat.log['iteration'] > 150]
     # Plot map
-    plotter = renderer.CellularPlotter(log)
+    plotter = renderer.CellularMap(log)
     fig = plotter.plot()
     fig.show()
     # Plot metrics
-    metrics = renderer.AgentPlotter(astat.log)
+    metrics = renderer.AgentMetrics(astat.log)
     fig = metrics.plot()
     fig.show()
 
