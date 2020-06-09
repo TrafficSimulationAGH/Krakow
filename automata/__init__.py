@@ -21,13 +21,15 @@ def main():
     cellular.build(sm)
     cstat = stats.LastCellStat()
     astat = stats.AgentStat('agent.log')
+    fstat = stats.InOutFlowStat('flow.log')
     # Simulate
     try:
         maxsteps = int(sys.argv[1])
     except:
         maxsteps = 300
     for i in range(0,maxsteps):
-        cellular.step([cstat, astat])
+        cellular.step([cstat, astat, fstat])
+    fstat.save()
     # Plot map
     plotter = renderer.CellularMap(cstat.log)
     fig = plotter.plot()

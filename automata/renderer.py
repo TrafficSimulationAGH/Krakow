@@ -17,15 +17,33 @@ class Plotter:
     def __init__(self, data):
         self.df = data
         self.cmap = px.colors.sequential.Burgyl
+        self.fields = {'x':'x', 'y':'y'}
 
     def plot(self):
         "Create scatter figure."
-        return px.scatter(self.df, x='x', y='y', color_continuous_scale=self.cmap)
+        return px.scatter(self.df, **self.fields, color_continuous_scale=self.cmap)
+
+class FlowMetrics(Plotter):
+    """
+    Plot wrapper for flow statistics.
+    Interactive plotly graph.
+    data - in-out flow log df
+    """
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.fields = {'x':'iteration', 'y':'flow', 'facet_col':'crossing', 'facet_row':'type'}
+
+    def plot(self):
+        "Plot flow sum."
+        df = self.df
+        return px.scatter(df, **self.fields, color_continuous_scale=self.cmap)
 
 class AgentMetrics(Plotter):
     """
     Plot wrapper for agents statistics.
     Interactive plotly graph.
+    >Ignores fields dictionary.
     data - agent log df
     """
 
@@ -50,12 +68,14 @@ class CellularMap(Plotter):
     data - cell log df
     """
 
+    def __init__(self, data):
+        super().__init__(data)
+        self.fields = {'x':'x', 'y':'y', 'color':'density', 'hover_data':['id','speed_lim','lanes','type']}
+
     def plot(self):
         "Create animated scatter figure."
         iters = len(self.df['iteration'].value_counts())
         if iters > 1:
-            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes','type'],
-                color_continuous_scale=self.cmap, animation_frame='iteration')
+            return px.scatter(self.df, **self.fields, color_continuous_scale=self.cmap, animation_frame='iteration')
         else:
-            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes','type'],
-                color_continuous_scale=self.cmap)
+            return px.scatter(self.df, **self.fields, color_continuous_scale=self.cmap)

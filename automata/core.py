@@ -25,8 +25,9 @@ class Vehicle:
     LIMIT = automata.utils.CONFIG.AGENT_LIMIT
 
     def __init__(self, v):
+        self.lifetime = 0
         self.v = max(v, 1)
-        self.travelled = 0
+        self.travelled = 1
         self.cell = None
 
     def is_off(self):
@@ -47,16 +48,21 @@ class Vehicle:
     def step(self):
         "Move forward"
         self.randomize()
+        self.lifetime += 1
         n = self.v
+        self.travelled = 0
         while n > 0:
             n -= 1
             if self.cell.is_connected() and self.cell.forward.is_free():
+                self.travelled += 1
                 self.cell.set_vehicle(None)
-                if type(self.cell) is EndPoint and random() < self.DRIVEOFF:
+                if type(self.cell) is EndPoint and self.travelled > 0 and random() < self.DRIVEOFF:
                     # Exit road
                     break
                 self.cell.forward.set_vehicle(self)
-        self.travelled = self.v - n
+            else:
+                # Cannot move
+                break
 
 class Cell:
     """
@@ -111,6 +117,7 @@ class Cell:
                 self.vehicles -= 1
 
     def copy(self):
+        "Create Cell deep copy."
         cell = Cell(self.coords, self.lanes, self.speed_lim)
         cell.forward = self.forward
         cell.turn = self.turn
@@ -232,7 +239,7 @@ class Cellular:
             # Save to destination
             for c in cells_dict[k]:
                 c.destination = k
-            # Connect End with Spawn
+            # Link End to next Spawn
             match = None
             for x in directions:
                 if x[0] == k[1]:

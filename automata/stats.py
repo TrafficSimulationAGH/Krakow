@@ -37,7 +37,14 @@ class InOutFlowStat(Stat):
     "Log in and out flow events."
 
     def extract(self, cellular):
-        return super().extract(cellular)
+        agent_out = [x for x in cellular.agents if x.is_off()]
+        agent_in = [x for x in cellular.agents if x.lifetime < 1]
+        data = []
+        for x in agent_out:
+            data.append({'type':'out', 'crossing':x.cell.destination[1], 'lifetime':x.lifetime, 'flow':1})
+        for x in agent_in:
+            data.append({'type':'in', 'crossing':x.cell.destination[0], 'lifetime':x.lifetime, 'flow':1})
+        return data
 
 class CellStat(Stat):
     "Log Cell state into a dataframe."

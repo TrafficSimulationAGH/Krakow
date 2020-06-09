@@ -15,7 +15,7 @@ class DefaultConfig:
     RADIUS = 5e-5
     SPAWN_RATE = 0.8
 
-    AGENT_DRIVEOFF = 0.3
+    AGENT_DRIVEOFF = 0.5
     AGENT_SLOW = 0.1
     AGENT_FAST = 0.1
     AGENT_LIMIT = 0.15
