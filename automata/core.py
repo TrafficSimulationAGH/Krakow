@@ -166,16 +166,19 @@ class Cellular:
     def step(self):
         "Perform simulation step. Call spawners and agents."
         self.iteration += 1
-        for x in self.spawns:
-            v = x.spawn()
-            if v is not None:
-                self.agents.append(v)
         # Clear agents that do not exist on map
         self.agents = [x for x in self.agents if not x.is_off()]
+        # Simulate car movement
         for x in self.agents:
             if x is None:
                 continue
             x.step()
+        # Traffic enters road
+        for x in self.spawns:
+            v = x.spawn()
+            if v is not None:
+                self.agents.append(v)
+        # Log
         if self.stat is not None:
             self.stat.append(self)
 
