@@ -6,30 +6,27 @@ import pandas as pd
 import plotly.express as px
 from automata.osmplotter import OSMPlotter
 
-class StatsPlotter:
+class AgentPlotter:
     """
-    Plot wrapper for collected statistics.
+    Plot wrapper for agents statistics.
     Interactive plotly graph.
-    data - Statistics object
+    data - Stat object
     """
 
     def __init__(self, data):
-        self.stats = data
+        self.df = data.agent_log
 
 class CellularPlotter:
     """
     Plot wrapper for simulation cells.
     Interactive plotly graph.
-    data - Cellular object
+    data - Stat object
     """
-    # TODO: animated plot
 
     def __init__(self, data):
-        self.cells = data.array
+        self.df = data.cell_log
 
     def plot(self):
-        "Create scatter figure"
-        to_dict = lambda x: {'x':x.coords[0],'y':x.coords[1],'id':x.id,'lanes':x.lanes,'density':round(x.vehicles/x.lanes,2),'speed_lim':x.speed_lim}
-        data = [to_dict(x) for x in self.cells]
-        df = pd.DataFrame(data)
-        return px.scatter(df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'])
+        "Create animated scatter figure."
+        return px.scatter(self.df, x='x', y='y', color='density',
+            animation_frame='iteration', hover_data=['id','speed_lim','lanes'])

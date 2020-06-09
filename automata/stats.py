@@ -12,6 +12,11 @@ class Stat:
         self.agent_log = None
 
     def save(self, fpath='log.csv'):
+        """
+        Save logs to files:
+        cell.fpath - cellular log
+        agent.fpath - agents log
+        """
         if self.cell_log is not None:
             self.cell_log.to_csv(f'cell.{fpath}', sep=';')
         if self.agent_log is not None:
@@ -19,7 +24,7 @@ class Stat:
 
     def log_cells(self, cell_array, it):
         "Log cells state."
-        update = [cell2dict(x) for x in cell_array]
+        update = [cell2dict(x, it) for x in cell_array]
         if len(update) > 0:
             if self.cell_log is None:
                 self.cell_log = pd.DataFrame(update)
@@ -28,7 +33,7 @@ class Stat:
 
     def log_agents(self, agent_array, it):
         "Log agents state."
-        update = [agent2dict(x) for x in agent_array]
+        update = [agent2dict(x, it) for x in agent_array]
         if len(update) > 0:
             if self.agent_log is None:
                 self.agent_log = pd.DataFrame(update)
