@@ -202,7 +202,7 @@ class Cellular:
         coords = line + np.ones(line.shape) * vec
         return coords
     
-    def cells_fill(self, line, lanes=1):
+    def cells_fill(self, line, lanes=1, maxspd=140):
         "Evenly distribute cells along line coordinates"
         reg = []
         dec = 1
@@ -214,7 +214,7 @@ class Cellular:
                 dec += 1
             else:
                 intercells = np.linspace(line[i-dec], line[i], num=n, endpoint=False)
-                reg += [Cell(coords, lanes) for coords in intercells]
+                reg += [Cell(coords, lanes, maxspd) for coords in intercells]
                 dec = 1
         for i in range(1,len(reg)):
             reg[i-1].append(reg[i])
@@ -249,14 +249,14 @@ class Cellular:
         for road in data.roads:
             # Clockwise road
             r = road.clockwise()
-            cw = self.cells_fill(r.points, lanes=r.lanes)
+            cw = self.cells_fill(r.points, lanes=r.lanes, maxspd=r.maxspeed)
             cw[0] = SpawnPoint.from_cell(cw[0])
             cw[-1] = EndPoint.from_cell(cw[-1])
             clockwise.update({r.destination: cw})
             # Anticlockwise road
             r = road.anticlockwise()
             offset = self.offset_lane(r.points, -5)
-            acw = self.cells_fill(offset, lanes=r.lanes)
+            acw = self.cells_fill(offset, lanes=r.lanes, maxspd=r.maxspeed)
             acw[0] = SpawnPoint.from_cell(acw[0])
             acw[-1] = EndPoint.from_cell(acw[-1])
             anticlock.update({r.destination: acw})

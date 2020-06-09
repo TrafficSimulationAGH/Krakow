@@ -33,6 +33,12 @@ class Stat:
             else:
                 self.log = self.log.append(update, ignore_index=True)
 
+class InOutFlowStat(Stat):
+    "Log in and out flow events."
+
+    def extract(self, cellular):
+        return super().extract(cellular)
+
 class CellStat(Stat):
     "Log Cell state into a dataframe."
 

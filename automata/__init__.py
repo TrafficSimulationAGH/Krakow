@@ -2,6 +2,7 @@
 Automata - a traffic simulation package.
 Imports: numpy, matplotlib
 """
+import sys
 from . import config
 from . import core
 from . import utils
@@ -21,7 +22,11 @@ def main():
     cstat = stats.LastCellStat()
     astat = stats.AgentStat('agent.log')
     # Simulate
-    for i in range(0,200):
+    try:
+        maxsteps = int(sys.argv[1])
+    except:
+        maxsteps = 300
+    for i in range(0,maxsteps):
         cellular.step([cstat, astat])
     # Plot map
     plotter = renderer.CellularMap(cstat.log)
