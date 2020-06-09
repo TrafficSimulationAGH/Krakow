@@ -11,6 +11,7 @@ from . import simplemap
 from . import openmap
 
 def main():
+    utils.CONFIG.RADIUS = 1e-4
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
     cellular.build(sm)

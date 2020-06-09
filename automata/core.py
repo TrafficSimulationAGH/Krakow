@@ -239,14 +239,14 @@ class Cellular:
         for road in data.roads:
             # Clockwise road
             r = road.clockwise()
-            offset = self.offset_lane(r.points, 1)
-            cw = self.cells_fill(offset, lanes=r.lanes)
+            cw = self.cells_fill(r.points, lanes=r.lanes)
             cw[0] = SpawnPoint.from_cell(cw[0])
             cw[-1] = EndPoint.from_cell(cw[-1])
             clockwise.update({r.destination: cw})
             # Anticlockwise road
             r = road.anticlockwise()
-            acw = self.cells_fill(r.points, lanes=r.lanes)
+            offset = self.offset_lane(r.points, 1)
+            acw = self.cells_fill(offset, lanes=r.lanes)
             acw[0] = SpawnPoint.from_cell(acw[0])
             acw[-1] = EndPoint.from_cell(acw[-1])
             anticlock.update({r.destination: acw})
