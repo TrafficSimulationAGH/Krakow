@@ -39,7 +39,7 @@ class FlowMetrics(Plotter):
         d = self.fields
         if 'crossing' in self.df.columns:
             d.update({'facet_row':'crossing'})
-        return px.line(self.df, **d, color_continuous_scale=self.cmap)
+        return px.line(self.df, **d)
 
 class AgentMetrics(Plotter):
     """
