@@ -26,13 +26,10 @@ class Vehicle:
 
     def __init__(self, v):
         self.lifetime = 0
+        self.is_off = False
         self.v = max(v, 1)
         self.travelled = 1
         self.cell = None
-
-    def is_off(self):
-        "Check whether agent got off map"
-        return self.cell is None
 
     def randomize(self):
         "Change variables randomly"
@@ -58,8 +55,10 @@ class Vehicle:
                 self.cell.set_vehicle(None)
                 if type(self.cell) is EndPoint and self.travelled > 0 and random() < self.DRIVEOFF:
                     # Exit road
+                    self.is_off = True
                     break
-                self.cell.forward.set_vehicle(self)
+                else:
+                    self.cell.forward.set_vehicle(self)
             else:
                 # Cannot move
                 break
@@ -183,11 +182,9 @@ class Cellular:
         """
         self.iteration += 1
         # Clear agents that do not exist on map
-        self.agents = [x for x in self.agents if not x.is_off()]
+        self.agents = [x for x in self.agents if not x.is_off]
         # Simulate car movement
         for x in self.agents:
-            if x is None:
-                continue
             x.step()
         # Traffic enters road
         for x in self.spawns:

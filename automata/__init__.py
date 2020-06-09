@@ -20,8 +20,8 @@ def main():
     cellular = core.Cellular()
     cellular.build(sm)
     cstat = stats.LastCellStat()
-    astat = stats.AgentStat('agent.log')
-    fstat = stats.InOutFlowStat('flow.log')
+    astat = stats.AgentStat()
+    fstat = stats.InOutFlowStat()
     # Simulate
     try:
         maxsteps = int(sys.argv[1])
@@ -29,7 +29,6 @@ def main():
         maxsteps = 300
     for i in range(0,maxsteps):
         cellular.step([cstat, astat, fstat])
-    fstat.save()
     # Plot map
     plotter = renderer.CellularMap(cstat.log)
     fig = plotter.plot()
@@ -37,6 +36,11 @@ def main():
     # Plot metrics
     metrics = renderer.AgentMetrics(astat.log)
     fig = metrics.plot()
+    fig.show()
+    # Plot flow
+    log = fstat.log.drop('crossing', axis=1).groupby(['iteration','type']).sum().reset_index()
+    flow = renderer.FlowMetrics(log)
+    fig = flow.plot()
     fig.show()
 
 if __name__ == "__main__":

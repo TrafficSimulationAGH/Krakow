@@ -32,12 +32,14 @@ class FlowMetrics(Plotter):
 
     def __init__(self, data):
         super().__init__(data)
-        self.fields = {'x':'iteration', 'y':'flow', 'facet_col':'crossing', 'facet_row':'type'}
+        self.fields = {'x':'iteration', 'y':'flow', 'color':'type'}
 
     def plot(self):
-        "Plot flow sum."
-        df = self.df
-        return px.scatter(df, **self.fields, color_continuous_scale=self.cmap)
+        "Create flow plot per crossing or total"
+        d = self.fields
+        if 'crossing' in self.df.columns:
+            d.update({'facet_row':'crossing'})
+        return px.line(self.df, **d, color_continuous_scale=self.cmap)
 
 class AgentMetrics(Plotter):
     """

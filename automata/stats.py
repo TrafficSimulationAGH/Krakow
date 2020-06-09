@@ -37,14 +37,15 @@ class InOutFlowStat(Stat):
     "Log in and out flow events."
 
     def extract(self, cellular):
-        agent_out = [x for x in cellular.agents if x.is_off()]
+        agent_out = [x for x in cellular.agents if x.is_off]
         agent_in = [x for x in cellular.agents if x.lifetime < 1]
         data = []
         for x in agent_out:
-            data.append({'type':'out', 'crossing':x.cell.destination[1], 'lifetime':x.lifetime, 'flow':1})
+            data.append({'iteration':cellular.iteration, 'type':'out', 'crossing':x.cell.destination[1], 'lifetime':x.lifetime, 'flow':1})
         for x in agent_in:
-            data.append({'type':'in', 'crossing':x.cell.destination[0], 'lifetime':x.lifetime, 'flow':1})
-        return data
+            data.append({'iteration':cellular.iteration, 'type':'in', 'crossing':x.cell.destination[0], 'lifetime':x.lifetime, 'flow':1})
+        sumdf = pd.DataFrame(data).groupby(['iteration','type','crossing']).sum()
+        return sumdf.reset_index().to_dict('records')
 
 class CellStat(Stat):
     "Log Cell state into a dataframe."
@@ -101,5 +102,6 @@ def agent2dict(agent, iteration=0):
         'id': agent.cell.id,
         'v': agent.travelled,
         'km/h': automata.utils.vcell2speed(agent.travelled),
+        'is_off': agent.is_off,
         'iteration': iteration
     }
