@@ -161,10 +161,12 @@ class Cellular:
         self.agents = []
         self.array = []
         self.spawns = []
-        self.stat = automata.stats.Stat()
 
-    def step(self):
-        "Perform simulation step. Call spawners and agents."
+    def step(self, stats=None):
+        """
+        Perform simulation step. Call spawners and agents.
+        stats - list of Stat objects
+        """
         self.iteration += 1
         # Clear agents that do not exist on map
         self.agents = [x for x in self.agents if not x.is_off()]
@@ -179,8 +181,9 @@ class Cellular:
             if v is not None:
                 self.agents.append(v)
         # Log
-        if self.stat is not None:
-            self.stat.append(self)
+        if stats is not None:
+            for s in stats:
+                s.append(self)
 
     def offset_lane(self, line, n):
         "Cells coordinates moved perpendicularly to create a new lane"

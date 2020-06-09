@@ -16,6 +16,9 @@ class AgentPlotter:
     def __init__(self, data):
         self.df = data
 
+    def plot(self):
+        return px.scatter(self.df)
+
 class CellularPlotter:
     """
     Plot wrapper for simulation cells.
