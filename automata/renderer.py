@@ -54,8 +54,8 @@ class CellularMap(Plotter):
         "Create animated scatter figure."
         iters = len(self.df['iteration'].value_counts())
         if iters > 1:
-            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'],
+            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes','type'],
                 color_continuous_scale=self.cmap, animation_frame='iteration')
         else:
-            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'],
+            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes','type'],
                 color_continuous_scale=self.cmap)

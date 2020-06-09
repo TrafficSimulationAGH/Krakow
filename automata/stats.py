@@ -40,13 +40,27 @@ class CellStat(Stat):
         return [cell2dict(x, cellular.iteration) for x in cellular.array]
 
 class LastCellStat(CellStat):
-    "Logger discarding all historical changes. For performance boosting."
+    "Logger discarding historical changes. For performance boosting."
+
+    def __init__(self, filename='log.csv', size=50):
+        self._stored = 0
+        self.filename = filename
+        self.size = size
+        self.log = None
 
     def append(self, cellular):
         "Append logs row to DataFrames. Discard previous state."
         update = self.extract(cellular)
         if len(update) > 0:
-            self.log = pd.DataFrame(update)
+            if self._stored < 1:
+                self.log = pd.DataFrame(update)
+                self._stored = 1
+            elif self._stored < self.size:
+                self.log = self.log.append(update, ignore_index=True)
+            else:
+                m = self.log['iteration'].min()
+                m = self.log[self.log['iteration'] == m].index.max()
+                self.log = self.log.append(update, ignore_index=True).loc[m:]
 
 class AgentStat(Stat):
     "Log agent state into a dataframe."
@@ -63,6 +77,7 @@ def cell2dict(cell, iteration=0):
         'density': round(cell.vehicles / cell.lanes, 2),
         'speed_lim': cell.speed_lim,
         'type': cell.TYPE,
+        'destination': cell.destination,
         'iteration': iteration
     }
 

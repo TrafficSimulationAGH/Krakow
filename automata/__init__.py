@@ -13,7 +13,7 @@ from . import openmap
 def main():
     # Reduce resolution
     utils.CONFIG.RADIUS = 2e-4
-    utils.CONFIG.TIMESTEP = 5.0
+    utils.CONFIG.TIMESTEP = 2.0
     # Initiate simulation
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
