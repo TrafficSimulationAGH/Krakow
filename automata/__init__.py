@@ -14,7 +14,11 @@ def main():
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
     cellular.build(sm)
-    plotter = renderer.CellularPlotter(cellular)
+    for i in range(0,200):
+        cellular.step()
+    log = cellular.stat.cell_log
+    log = log[log['iteration'] > 190]
+    plotter = renderer.CellularPlotter(log)
     fig = plotter.plot()
     fig.show()
 

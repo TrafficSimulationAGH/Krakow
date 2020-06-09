@@ -7,43 +7,52 @@ import automata.utils
 class Stat:
     "Statistics abstract class for logging."
 
-    def __init__(self):
-        self.cell_log = None
-        self.agent_log = None
+    def __init__(self, filename='log.csv'):
+        self.filename = filename
+        self.log = None
 
-    def save(self, fpath='log.csv'):
-        """
-        Save logs to files:
-        cell.fpath - cellular log
-        agent.fpath - agents log
-        """
-        if self.cell_log is not None:
-            self.cell_log.to_csv(f'cell.{fpath}', sep=';')
-        if self.agent_log is not None:
-            self.agent_log.to_csv(f'agent.{fpath}', sep=';')
+    def load(self, fpath):
+        "Load log from specified path."
+        self.log = pd.read_csv(fpath, sep=';')
 
-    def log_cells(self, cell_array, it):
-        "Log cells state."
-        update = [cell2dict(x, it) for x in cell_array]
-        if len(update) > 0:
-            if self.cell_log is None:
-                self.cell_log = pd.DataFrame(update)
-            else:
-                self.cell_log = self.cell_log.append(update, ignore_index=True)
+    def save(self):
+        "Save log to file in append mode."
+        if self.log is not None:
+            self.log.to_csv(self.filename, sep=';', index=False, mode='a')
 
-    def log_agents(self, agent_array, it):
-        "Log agents state."
-        update = [agent2dict(x, it) for x in agent_array]
-        if len(update) > 0:
-            if self.agent_log is None:
-                self.agent_log = pd.DataFrame(update)
-            else:
-                self.agent_log = self.agent_log.append(update, ignore_index=True)
+    def extract(self, cellular):
+        "Construct list of dicts from given state"
+        return [{'id': x.id, 'vehicles': x.vehicles, 'iteration': cellular.iteration} for x in cellular.array]
 
     def append(self, cellular):
         "Append logs row to DataFrames."
-        self.log_cells(cellular.array, cellular.iteration)
-        self.log_agents(cellular.agents, cellular.iteration)
+        update = self.extract(cellular)
+        if len(update) > 0:
+            if self.log is None:
+                self.log = pd.DataFrame(update)
+            else:
+                self.log = self.log.append(update, ignore_index=True)
+
+class CellStat(Stat):
+    "Log Cell state into a dataframe."
+
+    def extract(self, cellular):
+        return [cell2dict(x, cellular.iteration) for x in cellular.array]
+
+class LastCellStat(CellStat):
+    "Logger discarding all historical changes. For performance boosting."
+
+    def append(self, cellular):
+        "Append logs row to DataFrames. Discard previous state."
+        update = self.extract(cellular)
+        if len(update) > 0:
+            self.log = pd.DataFrame(update)
+
+class AgentStat(Stat):
+    "Log agent state into a dataframe."
+
+    def extract(self, cellular):
+        return [agent2dict(x, cellular.iteration) for x in cellular.agents]
 
 def cell2dict(cell, iteration=0):
     return {

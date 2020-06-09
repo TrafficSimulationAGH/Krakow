@@ -10,23 +10,26 @@ class AgentPlotter:
     """
     Plot wrapper for agents statistics.
     Interactive plotly graph.
-    data - Stat object
+    data - agent log
     """
 
     def __init__(self, data):
-        self.df = data.agent_log
+        self.df = data
 
 class CellularPlotter:
     """
     Plot wrapper for simulation cells.
     Interactive plotly graph.
-    data - Stat object
+    data - cell log
     """
 
     def __init__(self, data):
-        self.df = data.cell_log
+        self.df = data
 
     def plot(self):
         "Create animated scatter figure."
-        return px.scatter(self.df, x='x', y='y', color='density',
-            animation_frame='iteration', hover_data=['id','speed_lim','lanes'])
+        iters = len(self.df['iteration'].value_counts())
+        if iters > 1:
+            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'], animation_frame='iteration')
+        else:
+            return px.scatter(self.df, x='x', y='y', color='density', hover_data=['id','speed_lim','lanes'])
