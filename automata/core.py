@@ -1,8 +1,9 @@
 """
 Core definitions, basic structures.
 """
-import automata.utils as utils
-import automata.simplemap as sm
+import automata.utils
+import automata.simplemap
+#import automata.stats
 from random import random
 import math
 import numpy as np
@@ -15,11 +16,11 @@ class Vehicle:
     FAST - probability of accelerating
     LIMIT - probability of matching with speed limit
     """
-    V_MAX = utils.CONFIG.AGENT_VMAX
-    DRIVEOFF = utils.CONFIG.AGENT_DRIVEOFF
-    SLOW = utils.CONFIG.AGENT_SLOW
-    FAST = utils.CONFIG.AGENT_FAST
-    LIMIT = utils.CONFIG.AGENT_LIMIT
+    V_MAX = automata.utils.CONFIG.AGENT_VMAX
+    DRIVEOFF = automata.utils.CONFIG.AGENT_DRIVEOFF
+    SLOW = automata.utils.CONFIG.AGENT_SLOW
+    FAST = automata.utils.CONFIG.AGENT_FAST
+    LIMIT = automata.utils.CONFIG.AGENT_LIMIT
 
     def __init__(self, v):
         self.v = v
@@ -31,7 +32,7 @@ class Vehicle:
 
     def randomize(self):
         "Change variables randomly"
-        vmax = utils.speed2vcell(self.V_MAX)
+        vmax = automata.utils.speed2vcell(self.V_MAX)
         if self.v > 1 and random() < self.SLOW:
             self.v -= 1
         elif self.v < vmax and random() < self.FAST:
@@ -61,11 +62,12 @@ class Cell:
     - vehicles inside
     - adjacent cells - forward
     """
+    TYPE = 'Cell'
 
     def __init__(self, coords, lanes=1, speed_lim=140.0):
         self.id = 0
         self.lanes = lanes
-        self.speed_lim = utils.speed2vcell(speed_lim)
+        self.speed_lim = automata.utils.speed2vcell(speed_lim)
         self.coords = np.array(coords)
         self.forward = None
         self.vehicles = 0
@@ -76,7 +78,7 @@ class Cell:
         return (self.coords == other.coords).all()
 
     def __repr__(self):
-        return '<Cell {0} free:{1}>'.format(self.coords, self.is_free())
+        return '<{0} {1} free:{2}>'.format(self.TYPE, self.coords, self.is_free())
 
     def is_connected(self):
         "Checks if forward cell is set"
@@ -114,20 +116,15 @@ class Cell:
         point.__class__ = Cell
         return point
 
-class DeadPoint(Cell):
+class EndPoint(Cell):
     """
     Cell derived class that removes all vehicles that enter it.
     """
-    def __repr__(self):
-        return '<DeadPoint {0} free:{1}>'.format(self.coords, self.is_free())
-
-    def set_vehicle(self, vehicle):
-        self.vehicles = 0
-        vehicle.cell = None
+    TYPE = 'EndPoint'
 
     @staticmethod
     def from_cell(cell: Cell):
-        cell.__class__ = DeadPoint
+        cell.__class__ = EndPoint
         return cell
 
 class SpawnPoint(Cell):
@@ -136,10 +133,8 @@ class SpawnPoint(Cell):
     Loads config SPAWN_RATE as default RATE.
     RATE - probability of spawning
     """
-    RATE = utils.CONFIG.SPAWN_RATE
-
-    def __repr__(self):
-        return '<SpawnPoint {0} free:{1}>'.format(self.coords, self.is_free())
+    TYPE = 'SpawnPoint'
+    RATE = automata.utils.CONFIG.SPAWN_RATE
 
     def spawn(self):
         "Spawn a vehicle with a random chance. Returns spawned object."
@@ -162,12 +157,14 @@ class Cellular:
     """
 
     def __init__(self):
+        self.iteration = 0
         self.agents = []
         self.array = []
         self.spawns = []
 
     def step(self):
         "Perform simulation step. Call spawners and agents."
+        self.iteration += 1
         for x in self.spawns:
             v = x.spawn()
             if v is not None:
@@ -186,7 +183,7 @@ class Cellular:
         vec = line[-1] - line[0]
         heading = math.atan2(vec[1], vec[0]) + math.pi / 2
         # Offset vector
-        vec = np.array([math.cos(heading), math.sin(heading)]) * utils.CONFIG.RADIUS * n
+        vec = np.array([math.cos(heading), math.sin(heading)]) * automata.utils.CONFIG.RADIUS * n
         coords = line + np.ones(line.shape) * vec
         return coords
     
@@ -196,7 +193,7 @@ class Cellular:
         dec = 1
         for i in range(1,len(line)):
             vec = np.array(line[i]) - np.array(line[i-dec])
-            n = int(round(np.linalg.norm(vec) / utils.CONFIG.RADIUS))
+            n = int(round(np.linalg.norm(vec) / automata.utils.CONFIG.RADIUS))
             if n <= 0:
                 # Cells are too close - try extending range
                 dec += 1
@@ -226,7 +223,7 @@ class Cellular:
                 cells_dict[k][-1].append(cells_dict[match][0])
         return cells_dict
 
-    def build(self, data:sm.SM):
+    def build(self, data:automata.simplemap.SM):
         "Construct cellular grid from SM object"
         clockwise = {}
         anticlock = {}
@@ -236,11 +233,13 @@ class Cellular:
             offset = self.offset_lane(r.points, 1)
             cw = self.cells_fill(offset, lanes=r.lanes)
             cw[0] = SpawnPoint.from_cell(cw[0])
+            cw[-1] = EndPoint.from_cell(cw[-1])
             clockwise.update({r.destination: cw})
             # Anticlockwise road
             r = road.anticlockwise()
             acw = self.cells_fill(r.points, lanes=r.lanes)
             acw[0] = SpawnPoint.from_cell(acw[0])
+            acw[-1] = EndPoint.from_cell(acw[-1])
             anticlock.update({r.destination: acw})
         # Connect roads basing on destination
         clockwise = self.resolve_destination(clockwise)

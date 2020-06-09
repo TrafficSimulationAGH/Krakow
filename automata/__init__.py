@@ -2,8 +2,10 @@
 Automata - a traffic simulation package.
 Imports: numpy, matplotlib
 """
+from . import config
 from . import core
 from . import utils
+from . import stats
 from . import renderer
 from . import simplemap
 from . import openmap

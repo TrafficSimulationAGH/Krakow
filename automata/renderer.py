@@ -4,7 +4,6 @@ Uses plotly for interactive plotting.
 """
 import pandas as pd
 import plotly.express as px
-import automata.utils as utils
 from automata.osmplotter import OSMPlotter
 
 class StatsPlotter:
