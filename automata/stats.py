@@ -90,7 +90,7 @@ def cell2dict(cell, iteration=0):
         'y': cell.coords[1],
         'id': cell.id,
         'lanes': cell.lanes,
-        'density': round(cell.vehicles / cell.lanes, 2),
+        'density': round(cell.vehicles / max(cell.lanes,1), 2),
         'speed_lim': cell.speed_lim,
         'type': cell.TYPE,
         'destination': cell.destination,

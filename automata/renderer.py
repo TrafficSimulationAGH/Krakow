@@ -72,7 +72,7 @@ class CellularMap(Plotter):
 
     def __init__(self, data):
         super().__init__(data)
-        self.fields = {'x':'x', 'y':'y', 'color':'density', 'hover_data':['id','speed_lim','lanes','type']}
+        self.fields = {'x':'x', 'y':'y', 'color':'density', 'hover_data':['id','speed_lim','lanes','type','destination']}
 
     def plot(self):
         "Create animated scatter figure."
