@@ -62,6 +62,12 @@
 		\item Kraków Północ -- dla uproszczenia przyjęto taką nazwę planowanego węzła (wariant I)
 	\end{itemize}
 
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\textwidth]{img/note-map.png}
+		\caption{Mapa obwodnicy użytej w symulacji.}
+	\end{figure}
+
     \section{Algorytm}
     % Nagel-Schreckenberg
     Zastosowany przez nas algorytm ruchu drogowego to zmodyfikowany model Nagela-Schreckenberga, będący teoretycznym modelem mikroskopowym o charakterze dyskretnym, w którym obie jednokierunkowe jezdnie są podzielone na komórki, które zawierają informację na temat ilości pasów oraz ilości pojazdów w danej chwili na jezdni. Dzięki takiemu uproszczeniu, nie jest konieczna symulacja zmiany pasu ruchu, ponieważ nie jest on określony wprost.
@@ -99,19 +105,19 @@
     % Struktura projektu
     Obsługiwany plik mapy \texttt{SimpleMap} jest w formacie \texttt{json} i przybiera następujący format:
     \begin{center}
-	    \begin{figure}[ht]
+	    \begin{figure}[h]
 	    	\begin{lstlisting}
-	{
-		"nazwa wjazdu;nazwa zjazdu": {
-			"lanes": liczba_pasow,
-			"maxspeed": ograniczenie_predkosci,
-			"geometry": [
-				[lat, lon],
-				...
-			]
-		},
-		...
-	}
+{
+	"nazwa wjazdu;nazwa zjazdu": {
+		"lanes": liczba_pasow,
+		"maxspeed": ograniczenie_predkosci,
+		"geometry": [
+			[lat, lon],
+			...
+		]
+	},
+	...
+}
 	    	\end{lstlisting}
 	    	\caption{Przykład mapy w formacie SimpleMap.}
 	    \end{figure}
