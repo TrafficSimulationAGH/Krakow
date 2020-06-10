@@ -4,4 +4,5 @@ __pycache__
 *.pyc
 temp*
 .vscode
+.idea
 .env

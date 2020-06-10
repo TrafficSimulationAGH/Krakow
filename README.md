@@ -8,6 +8,8 @@ Foldery:
 - *automata/tests*: zawiera podstawowe testy jednostkowe
 
 ## Uruchomienie
+Notebook: `jupyter notebook automata.ipynb`
+
 Program główny: `python run.py`
 
 Testy: `python automata/tests/__init__.py`
