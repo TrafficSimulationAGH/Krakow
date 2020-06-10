@@ -9,14 +9,15 @@ class Road:
     Points should be given in clockwise direction.
     """
 
-    def __init__(self, start, dest, points, lanes=1):
+    def __init__(self, start, dest, points, lanes=1, maxspd=140):
         self.is_clockwise = True
         self.destination = (start, dest)
         self.points = np.array(points)
         self.lanes = lanes
+        self.maxspeed = maxspd
 
     def _reversed(self):
-        return Road(self.destination[1], self.destination[0], list(reversed(self.points)), self.lanes)
+        return Road(self.destination[1], self.destination[0], list(reversed(self.points)), self.lanes, self.maxspeed)
 
     def clockwise(self):
         "Road in clockwise direction"

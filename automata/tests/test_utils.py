@@ -13,7 +13,7 @@ class TestCoords(TestCase):
     def test_dist(self):
         a = utils.Coords(10.0, 10.0)
         b = utils.Coords(11.0, 9.0)
-        result = 155.99 #km
-        self.assertAlmostEqual(a.dist(b) / 1000, result)
-        self.assertAlmostEqual(b.dist(a) / 1000, result)
+        result = 155.99 # km
+        self.assertAlmostEqual(round(a.dist(b), 2) / 1000, result, places=2)
+        self.assertAlmostEqual(round(b.dist(a), 2) / 1000, result, places=2)
         self.assertAlmostEqual(b.dist(b), 0.0)
