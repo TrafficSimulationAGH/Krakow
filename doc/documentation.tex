@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{listings}
 
 \title{Symulacja ruchu drogowego na IV obwodnicy Krakowa}
 \author{Szymon Gałuszka, Michał Worsowicz, Maciej Nalepa}
@@ -84,23 +85,44 @@
 		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
 	\end{enumerate}
 
-    \part{Metodologia}
-
+    \part{Realizacja}
+    
     \section{Struktury danych}
-    % Tworzenie symulacji
+    % Struktura projektu
+    Obsługiwany plik mapy jest w formacie \texttt{json} i przybiera następującą formę:
+    \begin{center}
+    	\begin{lstlisting}
+    	{
+    		"nazwa wjazdu;nazwa zjazdu": {
+    			"lanes": liczba_pasów,
+    			"maxspeed": ograniczenie_prędkości,
+    			"geometry": [
+    				[lat, lon],
+    				...
+    			]
+    		},
+    		...
+    	}
+    	\end{lstlisting}
+    \end{center}
+    
+    Automat komórkowy -- \texttt{Cellular} przechowuje listę następujących obiektów: pojazdów (agentów), komórek, punktów startowych i końcowych.
+    Umożliwia budowanie mapy na podstawie pliku \texttt{json} kompatybilnego z modułem opracowania własnego \texttt{SimpleMap}.
 
     \section{Implementacja}
     % Wytłumaczenie rozwiązania problemu
 
     \section{Usprawnienie}
     % Słabe punkty implementacji, co działa za wolno lub niestabilnie
+    Zapis jednego stanu mapy to ramka danych o rozmiarze ilości komórek na mapie. Oznacza to, że pojedyńcza sekunda symulacji generuje nawet 30000 wpisów do ramki. W celu uniknięcia problemu z zapełnianiem pamięci stworzono specjalną klasę \texttt{LastCellStat} przechowującą określoną ilość stanów wstecz.
+    Lepszym rozwiązeniem może być zapis logów bezpośrednio do pliku.
+    
+    Konfiguracja prawdopodobieństwa opuszczenia skrzyżowania jest globalna, powinna być zależna od węzła.
 
     \part{Podsumowanie}
 
     \section{Wyniki}
-    % Opis symulacji i wpływu parametrów na model
-    Czas wykonania 10 minutowej symulacji wynosi około 2 minut przy domyślnych ustawieniach (procesor i5-8th Gen 4GHz).
-    
+    % Opis symulacji i wpływu parametrów na model    
 	Wszystko jest gites i działa!
 		
     \section{Od autorów}
@@ -110,6 +132,9 @@
     \section{Dalsza praca}
     % Uproszczenia i części wymagające ulepszeń lub optymalizacji
     % Nie umieszczamy ich w projekcie, ale zaznaczamy od czego zacząć aby projekt usprawnić
+    Aby uczynić projekt bardziej uniwersalnym, należy dodać obsługę innych zaawansowanych map.
+    Można to zrobić poprzez rozbudowanie obecnego modułu \texttt{SimpleMap} lub zaimplementować obsługę znanych już formatów, np. OpenStreetMap, Google MyMaps.
+    
     Projekt nie posiada innych pojazdów, niż domyślny osobowy. Zatem pierwszym usprawnieniem jest wprowadzenie pojazdów, które: 
     
     \begin{itemize}
@@ -118,9 +143,6 @@
     \end{itemize}
 
 	Obsługa całej platformy może zostać zawarta w wygodnej dla użytkownika oprawie graficznej, np. \texttt{kivy}. Na chwilę obecną najbardziej interaktywny interfejs uzyskujemy poprzez \texttt{jupyter notebook}, który ma duże ograniczenia wydajności.
-	
-	Zapis jednego stanu mapy to ramka danych o rozmiarze ilości komórek na mapie. Oznacza to, że pojedyńcza sekunda symulacji generuje nawet 30000 wpisów do ramki. W celu uniknięcia problemu z zapełnianiem pamięci stworzono specjalną klasę \texttt{LastCellStat} przechowującą określoną ilość stanów wstecz.
-	Lepszym rozwiązeniem może być zapis logów bezpośrednio do pliku.
 
 	\pagebreak
 	\begin{thebibliography}{15}
