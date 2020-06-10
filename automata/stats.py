@@ -22,7 +22,7 @@ class Stat:
 
     def extract(self, cellular):
         "Construct list of dicts from given state"
-        return [{'id': x.id, 'vehicles': x.vehicles, 'iteration': cellular.iteration} for x in cellular.array]
+        return [{'iteration': cellular.iteration}]
 
     def append(self, cellular):
         "Append logs row to DataFrames."
@@ -103,5 +103,6 @@ def agent2dict(agent, iteration=0):
         'v': agent.travelled,
         'km/h': automata.utils.vcell2speed(agent.travelled),
         'is_off': agent.is_off,
+        'lifetime': agent.lifetime,
         'iteration': iteration
     }

@@ -11,10 +11,7 @@ from . import renderer
 from . import simplemap
 from . import openmap
 
-def main():
-    # Reduce resolution
-    utils.CONFIG.RADIUS = 1e-4
-    utils.CONFIG.TIMESTEP = 1.5
+def main(maxsteps=200):
     # Initiate simulation
     sm = simplemap.SM('krakow.json')
     cellular = core.Cellular()
@@ -23,10 +20,6 @@ def main():
     astat = stats.AgentStat()
     fstat = stats.InOutFlowStat()
     # Simulate
-    try:
-        maxsteps = int(sys.argv[1])
-    except:
-        maxsteps = 300
     for i in range(0,maxsteps):
         cellular.step([cstat, astat, fstat])
     # Plot map
