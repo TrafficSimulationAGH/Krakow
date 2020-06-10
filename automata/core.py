@@ -39,7 +39,9 @@ class Vehicle:
         elif self.v < vmax and random() < self.FAST:
             self.v += 1
         elif random() < self.LIMIT:
-            self.v = min(self.cell.speed_lim, vmax)
+            target = min(self.cell.speed_lim, vmax)
+            # Accelerate or match speed
+            self.v = min(self.v + 1, target)
         self.v = max(self.v, 1)
 
     def step(self):
@@ -61,6 +63,7 @@ class Vehicle:
                     self.cell.forward.set_vehicle(self)
             else:
                 # Cannot move
+                self.v = max(self.travelled, 1)
                 break
 
 class Cell:

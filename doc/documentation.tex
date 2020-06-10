@@ -21,14 +21,12 @@
 	
 	Nasz cel to symulacja ruchu drogowego na IV obwodnicy Krakowa.
 	Konieczna jest definicja tras oraz sposobu poruszania się po nich.
-	Na obwodnicy nie ma sygnalizacji świetlnej, skrzyżowania znajdują się najczęściej pod wiaduktem i najpierw należy zjechać z drogi szybkiego ruchu.
-	Trasa ma zróżnicowane ograniczenia prędkości oraz różną ilość pasów ruchu.
+	Obwodnica tworzy zamkniętą pętlę (uwzględniając odcinek w budowie) i dzieli się na ruch zgodny i przeciwny do wsazówek zegara.
 	
 	Ruch drogowy powinien uwzględniać pojazdy osobowe, ciężarowe i transport publiczny.
 	Ciężkie pojazdy obowiązują inne ograniczenia prędkości oraz zajmują więcej przestrzeni na jezdni.
 	Napływ ruchu powinien odbywać się przez wjazdy na obwodnicę, które wpuszczają samochody z określoną częstotliwością, która może zależeć od pory dnia.
 	
-	Koniecznym elementem jest symulacja zmiany pasa ruchu. 
 	Symulacja może obejmować wydarzenia losowe, takie jak:
 	
 	\begin{itemize}
@@ -39,22 +37,27 @@
     
     \section{Obszar symulacji}
     % Obwodnica IV - szczegóły trasy
-	Symulowany przez nas obszar to IV obwodnica Krakowa, znana także jako obwodnica autostradowa Krakowa, ponieważ większość jej odcinka stanowi autostrada A4. Fragment ten na zachodnich obrzeżach miasta jest dwupasmowy, a na południowych - trójpasmowy. W najbliższym czasie przewidywana jest budowa odcinka północnego, który postanowiliśmy także uwzględnić w naszej symulacji, odtwarzając i dodając ten fragment do projektu. Poniżej przedstawiony jest wykaz węzłów drogowych, które obejmuje symulacja (zgodnie z kierunkiem ruchu wskazówek zegara):
+	Symulowany przez nas obszar to IV obwodnica Krakowa, znana także jako obwodnica autostradowa Krakowa, ponieważ większość jej odcinka stanowi autostrada A4.
+	
+	Na obwodnicy nie ma sygnalizacji świetlnej, skrzyżowania znajdują się najczęściej pod wiaduktem i najpierw należy zjechać z drogi szybkiego ruchu.
+	Trasa ma zróżnicowane ograniczenia prędkości oraz różną ilość pasów ruchu.
+	
+	Fragment ten na zachodnich obrzeżach miasta jest dwupasmowy, a na południowych - trójpasmowy. W najbliższym czasie przewidywana jest budowa odcinka północnego, który uwzględniliśmy w naszej symulacji, odtwarzając i dodając ten fragment do projektu. Poniżej przedstawiony jest wykaz węzłów drogowych, które obejmuje symulacja (zgodnie z kierunkiem ruchu wskazówek zegara):
 	
 	\begin{itemize}
-		\item Kraków Nowa Huta
-		\item Kraków Przewóz
-		\item Kraków Bieżanów
-		\item Kraków Wieliczka
-		\item Kraków Łagiewniki
-		\item Kraków Południe
-		\item Kraków Skawina
-		\item Kraków Tyniec
-		\item Kraków Bielany
-		\item Kraków Balice (lotnisko)
-		\item Balice I
-		\item Modlniczka
-		\item Modlnica
+		\item Kraków Nowa Huta,
+		\item Kraków Przewóz,
+		\item Kraków Bieżanów,
+		\item Kraków Wieliczka,
+		\item Kraków Łagiewniki,
+		\item Kraków Południe,
+		\item Kraków Skawina,
+		\item Kraków Tyniec,
+		\item Kraków Bielany,
+		\item Kraków Balice (lotnisko),
+		\item Balice I,
+		\item Modlniczka,
+		\item Modlnica,
 		\item Kraków Północ -- dla uproszczenia przyjęto taką nazwę planowanego węzła (wariant I)
 	\end{itemize}
 
@@ -70,18 +73,15 @@
     	\item komórka pełna -- fragment drogi z pojazdem na wszystkich pasach ruchu
     \end{itemize}
 
-	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ (symbolizuje ona ograniczenie prędkości na drodze).
+	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ -- symbolizuje ona maksymalną prędkość osiąganą przez samochód.
+	
 	Czas $t$ w modelu Nagela-Schreckenberga przyjmuje wartość dyskretną o stałym kroku, gdzie każdy etap można podzielić na cztery następujące po sobie czynności:
 
 	\begin{enumerate}
-		\item Przyspieszanie: \\
-		Jeżeli $v(n) < v_{max}$ to prędkość samochodu może ulec zwiększeniu o zadaną jednostkę, nie przekraczając prędkości maksymalnej.
-		\item Zwalnianie: \\
-		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
 		\item Losowość: \\
-		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze. Dla każdego samochodu $n$, gdzie $v(n) > 0$, prędkość zostaje zmniejszona o jedną jednostkę, z pewnym zadanym prawdopodobieństwem $p$.
-		\item Ruch samochodu: \\
-		W ostatnim kroku każdy z samochodów zostaje przesunięty do przodu o odpowiednią ilość komórek, wynikającą z jego prędkości.
+		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze. Dla każdego samochodu $n$ prędkość może zostać zmniejszona, zwiększona lub dopasowana do ograniczenia na drodze.
+		\item Ruch: \\
+		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
 	\end{enumerate}
 
     \part{Metodologia}
