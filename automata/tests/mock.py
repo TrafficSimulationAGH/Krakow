@@ -13,6 +13,6 @@ def tests_path(path):
 
 MockCellularMap = Cellular()
 
-MockStraightRoad = Cell([])
-MockStraightRoad.add(Cell([]))
-MockStraightRoad.add(Cell([]))
+MockStraightRoad = Cell([0.0,0.0])
+MockStraightRoad.append(Cell([1.0,0.0]))
+MockStraightRoad.append(Cell([1.5,1.0]))
