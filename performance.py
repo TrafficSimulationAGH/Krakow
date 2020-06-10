@@ -15,7 +15,7 @@ times = []
 steps = [20 * x for x in range(1,50)]
 for i in steps:
     start = time.time()
-    automata.main(i)
+    automata.simulate(i)
     end = time.time()
     times.append(end - start)
 
