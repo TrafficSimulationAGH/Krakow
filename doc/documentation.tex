@@ -76,48 +76,80 @@
 
 	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ -- symbolizuje ona maksymalną prędkość osiąganą przez samochód.
 	
-	Czas $t$ w modelu Nagela-Schreckenberga przyjmuje wartość dyskretną o stałym kroku, gdzie każdy etap można podzielić na cztery następujące po sobie czynności:
+	Czas $t$ w modelu przyjmuje wartość dyskretną o stałym kroku. Nasz algorytm można podzielić na cztery następujące po sobie czynności:
 
 	\begin{enumerate}
 		\item Losowość: \\
-		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze. Dla każdego samochodu $n$ prędkość może zostać zmniejszona, zwiększona lub dopasowana do ograniczenia na drodze.
+		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze.
+		Dla każdego samochodu $n$ prędkość może zostać zmniejszona, zwiększona lub dopasowana do ograniczenia na drodze (hamowanie lub przyspieszenie o wartość $1$ w kierunku przepisowej prędkości).
+		
 		\item Ruch: \\
 		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
+		
+		\item Populacja: \\
+		Punkty startowe z pewnym prawdopodobieństwem generują nowy pojazd, jeśli jest dla niego miejsce.
+		
+		\item Zapis danych: \\
+		Ostatnim krokiem jest zapisanie aktualnych stanów do monitorów zdefiniowanych przez użytkownika.
 	\end{enumerate}
 
     \part{Realizacja}
     
     \section{Struktury danych}
     % Struktura projektu
-    Obsługiwany plik mapy jest w formacie \texttt{json} i przybiera następującą formę:
+    Obsługiwany plik mapy \texttt{SimpleMap} jest w formacie \texttt{json} i przybiera następujący format:
     \begin{center}
-    	\begin{lstlisting}
-    	{
-    		"nazwa wjazdu;nazwa zjazdu": {
-    			"lanes": liczba_pasów,
-    			"maxspeed": ograniczenie_prędkości,
-    			"geometry": [
-    				[lat, lon],
-    				...
-    			]
-    		},
-    		...
-    	}
-    	\end{lstlisting}
+	    \begin{figure}[ht]
+	    	\begin{lstlisting}
+	{
+		"nazwa wjazdu;nazwa zjazdu": {
+			"lanes": liczba_pasow,
+			"maxspeed": ograniczenie_predkosci,
+			"geometry": [
+				[lat, lon],
+				...
+			]
+		},
+		...
+	}
+	    	\end{lstlisting}
+	    	\caption{Przykład mapy w formacie SimpleMap.}
+	    \end{figure}
     \end{center}
+	Dla kompatybilności z pierwszą realizacją mapy za pomocą formatu OpenStreetMap-json powstał moduł \texttt{OpenMap}. Użycie tego formatu wymaga konwersji z formatu \texttt{.osm} do \texttt{.json}, może do tego posłużyć program JOSM.
     
     Automat komórkowy -- \texttt{Cellular} przechowuje listę następujących obiektów: pojazdów (agentów), komórek, punktów startowych i końcowych.
     Umożliwia budowanie mapy na podstawie pliku \texttt{json} kompatybilnego z modułem opracowania własnego \texttt{SimpleMap}.
+    
+    Komórka -- \texttt{Cell} przechowuje wskaźnik do następnej komórki, ilość dostępnych pasów, dopuszczalną prędkość oraz aktualne wykorzystanie.
+    
+    Logi -- \texttt{Stat} zapisuje dane w postaci ramki danych \texttt{pandas}. W każdej iteracji dopisywane są wiersze z monitorowanymi danymi.
+    
+    Konfiguracja -- \texttt{CONFIG} udostępniony przez moduł utils pozwala na podłączenie klasy definiującej statycznie następujące parametry:
+    \begin{itemize}
+    	\item Timestep -- krok czasu $t$,
+    	\item Radius -- rozmiar komórki,
+    	\item Spawn rate -- domyślne prawdopodobieństwo pojawienia się nowego pojazdu w danym kroku,
+    	\item Agent driveoff -- prawdopodobieństwo opuszczenia obwodnicy,
+    	\item Agent slow -- domyślne prawdopodobieństwo hamowania,
+    	\item Agent fast -- domyślne prawdopodobieństwo przyspieszenia,
+    	\item Agent limit -- prawdopodobieństwo dążenia do ograniczenia prędkości,
+    	\item Agent Vmax -- domyślna maksymalna prędkość samochodu
+    \end{itemize}
 
     \section{Implementacja}
     % Wytłumaczenie rozwiązania problemu
 
     \section{Usprawnienie}
     % Słabe punkty implementacji, co działa za wolno lub niestabilnie
-    Zapis jednego stanu mapy to ramka danych o rozmiarze ilości komórek na mapie. Oznacza to, że pojedyńcza sekunda symulacji generuje nawet 30000 wpisów do ramki. W celu uniknięcia problemu z zapełnianiem pamięci stworzono specjalną klasę \texttt{LastCellStat} przechowującą określoną ilość stanów wstecz.
-    Lepszym rozwiązeniem może być zapis logów bezpośrednio do pliku.
+    Najsłabsze punkty implementacji:
     
-    Konfiguracja prawdopodobieństwa opuszczenia skrzyżowania jest globalna, powinna być zależna od węzła.
+    \begin{itemize}
+    	\item Zapis jednego stanu mapy to ramka danych o rozmiarze ilości komórek na mapie. Oznacza to, że pojedyńcza sekunda symulacji generuje nawet 30000 wpisów do ramki. W celu uniknięcia problemu z zapełnianiem pamięci stworzono specjalną klasę \texttt{LastCellStat} przechowującą określoną ilość stanów wstecz.
+    	Lepszym rozwiązeniem może być zapis logów bezpośrednio do pliku.
+    	
+    	\item Konfiguracja prawdopodobieństwa opuszczenia skrzyżowania jest globalna, powinna być zależna od węzła.
+    \end{itemize}
 
     \part{Podsumowanie}
 
@@ -135,8 +167,7 @@
     Aby uczynić projekt bardziej uniwersalnym, należy dodać obsługę innych zaawansowanych map.
     Można to zrobić poprzez rozbudowanie obecnego modułu \texttt{SimpleMap} lub zaimplementować obsługę znanych już formatów, np. OpenStreetMap, Google MyMaps.
     
-    Projekt nie posiada innych pojazdów, niż domyślny osobowy. Zatem pierwszym usprawnieniem jest wprowadzenie pojazdów, które: 
-    
+    Projekt nie posiada innych pojazdów, niż domyślny osobowy. Zatem kolejnym usprawnieniem jest wprowadzenie pojazdów, które: 
     \begin{itemize}
     	\item obowiązują inne ograniczenia prędkości
     	\item zajmują więcej, niż jedną komórkę
