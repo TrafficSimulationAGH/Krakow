@@ -29,9 +29,15 @@ class Stat:
         update = self.extract(cellular)
         if len(update) > 0:
             if self.log is None:
-                self.log = pd.DataFrame(update)
+                if type(update) is pd.DataFrame:
+                    self.log = update
+                else:
+                    self.log = pd.DataFrame(update)
             else:
-                self.log = self.log.append(update, ignore_index=True)
+                if type(update) is pd.DataFrame:
+                    self.log = pd.concat([self.log, update], ignore_index=True, copy=False)
+                else:
+                    self.log = pd.concat([self.log, pd.DataFrame(update)], ignore_index=True, copy=False)
 
 class InOutFlowStat(Stat):
     "Log in and out flow events."
@@ -45,7 +51,7 @@ class InOutFlowStat(Stat):
         for x in agent_in:
             data.append({'iteration':cellular.iteration, 'type':'in', 'crossing':x.cell.destination[0], 'lifetime':x.lifetime, 'flow':1})
         sumdf = pd.DataFrame(data).groupby(['iteration','type','crossing']).sum()
-        return sumdf.reset_index().to_dict('records')
+        return sumdf.reset_index()
 
 class CellStat(Stat):
     "Log Cell state into a dataframe."
@@ -57,10 +63,9 @@ class LastCellStat(CellStat):
     "Logger discarding historical changes. For performance boosting."
 
     def __init__(self, filename='log.csv', size=50):
+        super().__init__(filename)
         self._stored = 0
-        self.filename = filename
         self.size = size
-        self.log = None
 
     def append(self, cellular):
         "Append logs row to DataFrames. Discard previous state."
@@ -71,12 +76,12 @@ class LastCellStat(CellStat):
                 self.log = pd.DataFrame(update)
             elif self._stored < self.size:
                 self._stored += 1
-                self.log = self.log.append(update, ignore_index=True)
+                self.log = pd.concat([self.log, pd.DataFrame(update)], ignore_index=True, copy=False)
             else:
                 m = self.log['iteration'].min()
                 m = self.log[self.log['iteration'] == m].index
                 self.log = self.log.drop(m)
-                self.log = self.log.append(update, ignore_index=True)
+                self.log = pd.concat([self.log, pd.DataFrame(update)], ignore_index=True, copy=False)
 
 class AgentStat(Stat):
     "Log agent state into a dataframe."
