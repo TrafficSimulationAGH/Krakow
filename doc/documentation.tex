@@ -1,4 +1,4 @@
-% dokumentacja projektu w czasie tworzenia
+% Michał weź zrób jakieś slajdy z tymi obrazkami czy cuś
 \documentclass[a4paper,12pt]{article}
 \usepackage[polish]{babel}
 \usepackage[utf8]{inputenc}
@@ -19,7 +19,7 @@
 
 	\section{Definicja problemu}
 	
-	Nasz cel to symulacja ruchu drogowego na IV obwodnicy Krakowa \ref{obw}. 
+	Nasz cel to symulacja ruchu drogowego na IV obwodnicy Krakowa.
 	Konieczna jest definicja tras oraz sposobu poruszania się po nich.
 	Na obwodnicy nie ma sygnalizacji świetlnej, skrzyżowania znajdują się najczęściej pod wiaduktem i najpierw należy zjechać z drogi szybkiego ruchu.
 	Trasa ma zróżnicowane ograniczenia prędkości oraz różną ilość pasów ruchu.
@@ -42,35 +42,33 @@
 	Symulowany przez nas obszar to IV obwodnica Krakowa, znana także jako obwodnica autostradowa Krakowa, ponieważ większość jej odcinka stanowi autostrada A4. Fragment ten na zachodnich obrzeżach miasta jest dwupasmowy, a na południowych - trójpasmowy. W najbliższym czasie przewidywana jest budowa odcinka północnego, który postanowiliśmy także uwzględnić w naszej symulacji, odtwarzając i dodając ten fragment do projektu. Poniżej przedstawiony jest wykaz węzłów drogowych, które obejmuje symulacja (zgodnie z kierunkiem ruchu wskazówek zegara):
 	
 	\begin{itemize}
-		\item węzeł Kraków Mistrzejowice (planowany)
-		\item węzeł Kraków Grębałów (planowany)
-		\item węzeł Kraków Nowa Huta
-		\item węzeł Kraków Przewóz
-		\item węzeł Kraków Bieżanów
-		\item węzeł Kraków Wielicka
-		\item węzeł Kraków Łagiewniki
-		\item węzeł Kraków Południe
-		\item węzeł Kraków Skawina
-		\item węzeł Kraków Tyniec
-		\item węzeł Kraków Bielany
-		\item węzeł Kraków Balice (lotnisko)
-		\item węzeł Balice I
-		\item węzeł Modlniczka (Rząska)
-		\item węzeł Modlnica
-		\item węzeł Kraków Zielonki (planowany)
-		\item węzeł Kraków Węgrzce (planowany)
-		\item węzeł Kraków Batowice (planowany)
+		\item Kraków Nowa Huta
+		\item Kraków Przewóz
+		\item Kraków Bieżanów
+		\item Kraków Wieliczka
+		\item Kraków Łagiewniki
+		\item Kraków Południe
+		\item Kraków Skawina
+		\item Kraków Tyniec
+		\item Kraków Bielany
+		\item Kraków Balice (lotnisko)
+		\item Balice I
+		\item Modlniczka
+		\item Modlnica
+		\item Kraków Północ -- dla uproszczenia przyjęto taką nazwę planowanego węzła (wariant I)
 	\end{itemize}
 
     \section{Algorytm}
     % Nagel-Schreckenberg
-    Zastosowany przez nas algorytm ruchu drogowego to model Nagela-Schreckenberga, będący teoretycznym modelem mikroskopowym o charakterze dyskretnym, w którym obie jednokierunkowe jezdnie są podzielone na komórki, które mogą z kolei składać się z np. dwóch pasów. Każda z komórek może być interpretowana na jeden z dwóch sposobów:
+    Zastosowany przez nas algorytm ruchu drogowego to zmodyfikowany model Nagela-Schreckenberga, będący teoretycznym modelem mikroskopowym o charakterze dyskretnym, w którym obie jednokierunkowe jezdnie są podzielone na komórki, które zawierają informację na temat ilości pasów oraz ilości pojazdów w danej chwili na jezdni. Dzięki takiemu uproszczeniu, nie jest konieczna symulacja zmiany pasu ruchu, ponieważ nie jest on określony wprost.
+    
+    Każda z komórek może być interpretowana na jeden ze sposobów:
     
     \begin{itemize}
-    	\item fragment pustej drogi
-    	\item fragment zawierający pojedyńczy samochód
+    	\item komórka pusta -- fragment pustej drogi
+    	\item komórka używana -- fragment zawierający pojazd na nieokreślonym pasie
+    	\item komórka pełna -- fragment drogi z pojazdem na wszystkich pasach ruchu
     \end{itemize}
-
 
 	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ (symbolizuje ona ograniczenie prędkości na drodze).
 	Czas $t$ w modelu Nagela-Schreckenberga przyjmuje wartość dyskretną o stałym kroku, gdzie każdy etap można podzielić na cztery następujące po sobie czynności:
@@ -101,14 +99,28 @@
 
     \section{Wyniki}
     % Opis symulacji i wpływu parametrów na model
-		Wszystko jest gites i działa
+    Czas wykonania 10 minutowej symulacji wynosi około 2 minut przy domyślnych ustawieniach (procesor i5-8th Gen 4GHz).
+    
+	Wszystko jest gites i działa!
+		
     \section{Od autorów}
     % Nasze przemyślenia o projekcie, napotkane trudności
-    Pozdrawiamy
+    Nasz framework umożliwa w obecnym stanie analizę interesującego parametru: średniego czasu jaki samochód spędza na obwodnicy. Postanowiliśmy zostawić to jako propozycję do samodzielnego eksperymentu z tą symulacją.
 
     \section{Dalsza praca}
     % Uproszczenia i części wymagające ulepszeń lub optymalizacji
     % Nie umieszczamy ich w projekcie, ale zaznaczamy od czego zacząć aby projekt usprawnić
+    Projekt nie posiada innych pojazdów, niż domyślny osobowy. Zatem pierwszym usprawnieniem jest wprowadzenie pojazdów, które: 
+    
+    \begin{itemize}
+    	\item obowiązują inne ograniczenia prędkości
+    	\item zajmują więcej, niż jedną komórkę
+    \end{itemize}
+
+	Obsługa całej platformy może zostać zawarta w wygodnej dla użytkownika oprawie graficznej, np. \texttt{kivy}. Na chwilę obecną najbardziej interaktywny interfejs uzyskujemy poprzez \texttt{jupyter notebook}, który ma duże ograniczenia wydajności.
+	
+	Zapis jednego stanu mapy to ramka danych o rozmiarze ilości komórek na mapie. Oznacza to, że pojedyńcza sekunda symulacji generuje nawet 30000 wpisów do ramki. W celu uniknięcia problemu z zapełnianiem pamięci stworzono specjalną klasę \texttt{LastCellStat} przechowującą określoną ilość stanów wstecz.
+	Lepszym rozwiązeniem może być zapis logów bezpośrednio do pliku.
 
 	\pagebreak
 	\begin{thebibliography}{15}
