@@ -82,21 +82,18 @@
 
 	Każdy samochód $n$ posiada swoją prędkość $v(n)$ o wartości liczby naturalnej, nie większej od prędkości maksymalnej $v_{max}$ -- symbolizuje ona maksymalną prędkość osiąganą przez samochód.
 	
-	Czas $t$ w modelu przyjmuje wartość dyskretną o stałym kroku. Nasz algorytm można podzielić na cztery następujące po sobie czynności:
+	Czas $t$ w modelu przyjmuje wartość dyskretną o stałym kroku. Nasz algorytm można podzielić na następujące po sobie czynności:
 
 	\begin{enumerate}
 		\item Losowość: \\
 		Czynność ta symbolizuje wszelkie przypadki losowe z jakimi kierowca może spotkać się na drodze.
 		Dla każdego samochodu $n$ prędkość może zostać zmniejszona, zwiększona lub dopasowana do ograniczenia na drodze (hamowanie lub przyspieszenie o wartość $1$ w kierunku przepisowej prędkości).
 		
-		\item Ruch: \\
+		\item Zwalnianie: \\
 		Jeżeli odległość $d(n)$ samochodu $n$ od samochodu znajdującego się przed nim jest mniejsza od prędkości $v(n)$ tego samochodu to prędkość samochodu ulega zmniejszeniu. Jako że odległość mierzona jest w liczbie komórek, a prędkość w liczbie komórek na jednostkę czasu, to prędkość ostateczna może wynosić maksymalnie $d(n)$ na jednostkę czasu, a minimalnie zero.
 		
-		\item Populacja: \\
-		Punkty startowe z pewnym prawdopodobieństwem generują nowy pojazd, jeśli jest dla niego miejsce.
-		
-		\item Zapis danych: \\
-		Ostatnim krokiem jest zapisanie aktualnych stanów do monitorów zdefiniowanych przez użytkownika.
+		\item Ruch samochodu: \\
+		W ostatnim kroku każdy z samochodów zostaje przesunięty do przodu o odpowiednią ilość komórek, wynikającą z jego prędkości.
 	\end{enumerate}
 
     \part{Realizacja}
@@ -145,6 +142,10 @@
 
     \section{Implementacja}
     % Wytłumaczenie rozwiązania problemu
+    
+    \subsection{Mapa}
+    \subsection{Automat komórkowy}
+    \subsection{Statystyki i grafika}
 
     \section{Usprawnienie}
     % Słabe punkty implementacji, co działa za wolno lub niestabilnie
@@ -160,12 +161,24 @@
     \part{Podsumowanie}
 
     \section{Wyniki}
-    % Opis symulacji i wpływu parametrów na model    
-	Wszystko jest gites i działa!
+    % Opis symulacji i wpływu parametrów na model
+    Przeprowadziliśmy symulację w trzech wariantach: normalnego ruchu, ruchu ze zwężeniem na odcinku Bielany-Balice, blokada drogi na odcinku Bieżanów-Przewóz.
+    
+    Symulację można powtórzyć samodzielnie za pomocą jupyter notebook \texttt{automata.ipynb} z możliwością modyfikacji parametrów.
+    
+    \subsection{Ruch normalny}
+    \subsection{Zwężenie}
+    \subsection{Blokada}
+    \subsection{Statystyki}
+    \subsection{Wydajność}
 		
     \section{Od autorów}
     % Nasze przemyślenia o projekcie, napotkane trudności
     Nasz framework umożliwa w obecnym stanie analizę interesującego parametru: średniego czasu jaki samochód spędza na obwodnicy. Postanowiliśmy zostawić to jako propozycję do samodzielnego eksperymentu z tą symulacją.
+    
+    W czasie pracy napotkaliśmy duże trudności w implementacji mapy. Chcieliśmy wykorzystać istniejące, dostępne mapy, co okazało się być bardzo trudne w implementacji. Ostatecznie stworzyliśmy własny prosty format mapy, który przygotowaliśmy ręcznie na podstawie uzyskanych już wcześniej danych na temat obwodnicy.
+    
+    Początkowo podczas projektu stosowana była metodologia Test Driven Development (TDD), jednak tylko do czasu prac nad OpenStreetMap, z którego zrezygnowaliśmy. Ograniczenia czasowe zmusiły nas do zrezygnowania z metody, aby ograniczyć ilość pisanego kodu. Mimo to, uważamy, że wygodnie pracuje się w ten sposób i ma on potencjał do zastosowania w przyszłych projektach.
 
     \section{Dalsza praca}
     % Uproszczenia i części wymagające ulepszeń lub optymalizacji
