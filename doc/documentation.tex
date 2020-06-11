@@ -36,6 +36,7 @@
 		\item nagłe hamowanie.
     \end{itemize}
     
+    \sloppy
     \section{Obszar symulacji}
     % Obwodnica IV - szczegóły trasy
 	Symulowany przez nas obszar to IV obwodnica Krakowa, znana także jako obwodnica autostradowa Krakowa, ponieważ większość jej odcinka stanowi autostrada A4.
@@ -101,9 +102,9 @@
     \section{Struktury danych}
     % Struktura projektu
     Obsługiwany plik mapy \texttt{SimpleMap} jest w formacie \texttt{json} i przybiera następujący format:
-    \begin{center}
-	    \begin{figure}[h]
-	    	\begin{lstlisting}
+	\begin{figure}[h]
+	    \centering
+	    \begin{lstlisting}
 {
 	"nazwa wjazdu;nazwa zjazdu": {
 		"lanes": liczba_pasow,
@@ -115,12 +116,13 @@
 	},
 	...
 }
-	    	\end{lstlisting}
-	    	\caption{Przykład mapy w formacie SimpleMap.}
-	    \end{figure}
-    \end{center}
+	    \end{lstlisting}
+	    \caption{Przykład pliku w formacie SimpleMap.}
+	    \label{sm-format}
+	\end{figure}
 	Dla kompatybilności z pierwszą realizacją mapy za pomocą formatu OpenStreetMap-json powstał moduł \texttt{OpenMap}. Użycie tego formatu wymaga konwersji z formatu \texttt{.osm} do \texttt{.json}, może do tego posłużyć program JOSM.
     
+    \label{automat}
     Automat komórkowy -- \texttt{Cellular} przechowuje listę następujących obiektów: pojazdów (agentów), komórek, punktów startowych i końcowych.
     Umożliwia budowanie mapy na podstawie pliku \texttt{json} kompatybilnego z modułem opracowania własnego \texttt{SimpleMap}.
     
@@ -128,6 +130,7 @@
     
     Logi -- \texttt{Stat} zapisuje dane w postaci ramki danych \texttt{pandas}. W każdej iteracji dopisywane są wiersze z monitorowanymi danymi.
     
+    \label{logs}
     Konfiguracja -- \texttt{CONFIG} udostępniony przez moduł utils pozwala na podłączenie klasy definiującej statycznie następujące parametry:
     \begin{itemize}
     	\item Timestep -- krok czasu $t$,
@@ -136,7 +139,7 @@
     	\item Agent driveoff -- prawdopodobieństwo opuszczenia obwodnicy,
     	\item Agent slow -- domyślne prawdopodobieństwo hamowania,
     	\item Agent fast -- domyślne prawdopodobieństwo przyspieszenia,
-    	\item Agent limit -- prawdopodobieństwo dążenia do ograniczenia prędkości,
+    	\item Agent limit -- domyślne prawdopodobieństwo dążenia do ograniczenia prędkości,
     	\item Agent Vmax -- domyślna maksymalna prędkość samochodu
     \end{itemize}
 
@@ -144,8 +147,82 @@
     % Wytłumaczenie rozwiązania problemu
     
     \subsection{Mapa}
+    \subsubsection{OpenStreetMap}
+    Początkowo projekt zakładał wykorzystanie formatu OSM do budowania mapy. Okazało się, że dane wymagają dużego nakładu pracy w celu poprawek i wypełnienia braków (\ref{osm-na}).
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=\textwidth]{img/whiteisna.jpg}
+    	\caption{Brakujące dane w pliku OSM. (biały -- oznacza brak danych | czarny -- dane występują)}
+    	\label{osm-na}
+    \end{figure}
+    
+    Ponadto, drogi OSM były podzielone na dużo bardzo krótkich odcinków (\ref{osm-parts}). Wymuszało to implementację algorytmu, który rozwiązałby istniejące relacje między odcinkami, tak aby je odpowiednio połączyć.
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=0.7\textwidth]{img/osmparts.jpg}
+    	\caption{Każdy kolor i kształt oznacza oddzielny odcinek drogi (OSM).}
+    	\label{osm-parts}
+    \end{figure}
+    
+    \subsubsection{SimpleMap}
+    \texttt{SimpleMap} to moduł opracowania własnego, którego celem jest odczyt i preprocessing danych w formacie zdefiniowanym w sekcji Struktur danych (\ref{sm-format}).
+    Stanowi to duże ułatwienie w pracy z mapą, ponieważ ten format jasno określa początek i koniec odcinka, co w przypadku OSM było nietrywialnym problemem.
+    
+    Dane dzielimy na odcinki drogi, określając sortowanie współrzędnych zgodnie lub przeciwnie do ruchu wskazówek zegara. Dodatkowe parametry to ilość pasów oraz dopuszczalna prędkość maksymalna.
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=\textwidth]{img/sim-map.jpg}
+    	\caption{Animowana mapa symulacji.}
+    \end{figure}
+    
     \subsection{Automat komórkowy}
-    \subsection{Statystyki i grafika}
+    Automat zdefiniowany jako \texttt{Cellular} w module \texttt{core} odpowiada za budowę mapy bazując na obiekcie \texttt{SimpleMap}. Generuje on siatkę odpowiednio połączonych komórek, tworzy przeciwny, przesunięty pas ruchu, oznacza początek i koniec drogi (od wjazdu do zjazdu) i rozwiązuje połączenia komórek między odcinkami.
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=\textwidth]{img/note-map-zoom.png}
+    	\caption{Zbliżenie na komórki mapy.}
+    \end{figure}
+
+	Funkcja \texttt{step} odpowiada za obliczenie kroku symulacji. Przyjmuje ona jako parametr listę metryk (\texttt{Stat}), co umożliwia wydajne i w pełni określone przez użytkownika monitorowanie symulacji.
+
+    \subsection{Metryki}
+    W celu prowadzenia statystyk w wygodny i uniwersalny sposób opracowaliśmy klasę \texttt{Stat}.
+    Aby ją wykorzystać, należy stworzyć nową klasę dziedziczącą po niej i nadpisującą definicję \texttt{extract}, która decyduje o tym jakie dane wyciągamy z aktualnego stanu symulacji i zapisujemy jako wiersze w ramce danych (\ref{logs}).
+    
+    Każda metryka dziedzicząca po klasie \texttt{Stat} umożliwia zapis i odczyt z pliku.
+    
+    Predefiniowaliśmy następujące metryki:
+    \begin{itemize}
+    	\item InOutFlowStat -- zapisuje ile pojazdów i gdzie opuściło lub wjechało na obwodnicę,
+    	\item CellStat -- zapisuje aktualny stan wszystkich komórek mapy,
+    	\item LastCellStat -- CellStat przechowujący określoną ilość iteracji wstecz,
+    	\item AgentStat -- zapisuje stany wszystkich pojazdów na drodze.
+    \end{itemize}
+    
+    \subsection{Wykresy}
+    Moduł \texttt{renderer} zawiera implementację klasy \texttt{Plotter}, która umożliwia w łatwy sposób na tworzenie interaktywnych wykresów wykorzystujących bibliotekę Plotly \cite{plotly}.
+    
+    Dane dostarczane są w ramce danych \texttt{pandas}.
+    Podstawowa klasa umożliwia tworzenie wykresów na podstawie słownika \texttt{fields}, który decyduje jakie parametry przekazujemy do Plotly Express.
+    Zapewnia to dużą swobodę i jest bardzo prostym rozwiązaniem.
+    
+    Stworzyliśmy też trzy predefiniowane klasy do szybkiego rysowania podstawowych statystyk: AgentMetrics, FlowMetrics oraz CellularMap do rysowania aktualnej mapy.
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=\textwidth]{img/sim-agents.jpg}
+    	\caption{AgentMetrics: Wykres na podstawie wybranych danych zebranych przez AgentStat.}
+    \end{figure}
+    
+    \begin{figure}[h]
+    	\centering
+    	\includegraphics[width=\textwidth]{img/note-custom.png}
+    	\caption{Przykładowy wykres zdefiniowany przy użyciu pola \texttt{fields}. Kod dostępny w notebooku.}
+    \end{figure}
 
     \section{Usprawnienie}
     % Słabe punkty implementacji, co działa za wolno lub niestabilnie
@@ -176,7 +253,7 @@
     % Nasze przemyślenia o projekcie, napotkane trudności
     Nasz framework umożliwa w obecnym stanie analizę interesującego parametru: średniego czasu jaki samochód spędza na obwodnicy. Postanowiliśmy zostawić to jako propozycję do samodzielnego eksperymentu z tą symulacją.
     
-    W czasie pracy napotkaliśmy duże trudności w implementacji mapy. Chcieliśmy wykorzystać istniejące, dostępne mapy, co okazało się być bardzo trudne w implementacji. Ostatecznie stworzyliśmy własny prosty format mapy, który przygotowaliśmy ręcznie na podstawie uzyskanych już wcześniej danych na temat obwodnicy.
+    W czasie pracy napotkaliśmy duże trudności w implementacji mapy. Chcieliśmy wykorzystać istniejące, dostępne mapy, co okazało się być bardzo trudne w implementacji. Straciliśmy kilka tygodni tylko na szukanie rozwiązań umożliwiających wykorzystanie tego formatu. Ostatecznie stworzyliśmy własny, prosty format mapy, który przygotowaliśmy ręcznie na podstawie uzyskanych już wcześniej danych na temat obwodnicy.
     
     Początkowo podczas projektu stosowana była metodologia Test Driven Development (TDD), jednak tylko do czasu prac nad OpenStreetMap, z którego zrezygnowaliśmy. Ograniczenia czasowe zmusiły nas do zrezygnowania z metody, aby ograniczyć ilość pisanego kodu. Mimo to, uważamy, że wygodnie pracuje się w ten sposób i ma on potencjał do zastosowania w przyszłych projektach.
 
@@ -208,6 +285,10 @@
 		K. Nagel, M. Schreckenberg, \textit{Two lane traffic simulations using cellular automata},
 		\texttt{\href{https://arxiv.org/pdf/cond-mat/9512119.pdf}{arxiv.org}}
 		% https://www.sciencedirect.com/science/article/pii/0378437195004424
+		
+		\bibitem{plotly}
+		Plotly, \textit{interaktywne wykresy},
+		\texttt{\href{https://plotly.com/}{plotly.com}}
 	\end{thebibliography}
 	
 \end{document}
