@@ -16,10 +16,10 @@ class DefaultConfig:
     SPAWN_RATE = 0.8
 
     AGENT_DRIVEOFF = 0.5
-    AGENT_SLOW = 0.1
-    AGENT_FAST = 0.1
-    AGENT_LIMIT = 0.15
-    AGENT_VMAX = 180.0
+    AGENT_SLOW = 0.2
+    AGENT_FAST = 0.3
+    AGENT_LIMIT = 0.3
+    AGENT_VMAX = 190.0
 
 # Select config
 CONFIG = DefaultConfig
