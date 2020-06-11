@@ -9,6 +9,7 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{float}
 
 \title{Symulacja ruchu drogowego na IV obwodnicy Krakowa}
 \author{Szymon Gałuszka, Michał Worsowicz, Maciej Nalepa}
@@ -63,7 +64,7 @@
 		\item Kraków Północ -- dla uproszczenia przyjęto taką nazwę planowanego węzła (wariant I)
 	\end{itemize}
 
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=\textwidth]{img/note-map.png}
 		\caption{Mapa obwodnicy użytej w symulacji.}
@@ -102,7 +103,7 @@
     \section{Struktury danych}
     % Struktura projektu
     Obsługiwany plik mapy \texttt{SimpleMap} jest w formacie \texttt{json} i przybiera następujący format:
-	\begin{figure}[h]
+	\begin{figure}[H]
 	    \centering
 	    \begin{lstlisting}
 {
@@ -150,7 +151,7 @@
     \subsubsection{OpenStreetMap}
     Początkowo projekt zakładał wykorzystanie formatu OSM do budowania mapy. Okazało się, że dane wymagają dużego nakładu pracy w celu poprawek i wypełnienia braków (\ref{osm-na}).
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=\textwidth]{img/whiteisna.jpg}
     	\caption{Brakujące dane w pliku OSM. (biały -- oznacza brak danych | czarny -- dane występują)}
@@ -159,7 +160,7 @@
     
     Ponadto, drogi OSM były podzielone na dużo bardzo krótkich odcinków (\ref{osm-parts}). Wymuszało to implementację algorytmu, który rozwiązałby istniejące relacje między odcinkami, tak aby je odpowiednio połączyć.
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=0.7\textwidth]{img/osmparts.jpg}
     	\caption{Każdy kolor i kształt oznacza oddzielny odcinek drogi (OSM).}
@@ -172,7 +173,7 @@
     
     Dane dzielimy na odcinki drogi, określając sortowanie współrzędnych zgodnie lub przeciwnie do ruchu wskazówek zegara. Dodatkowe parametry to ilość pasów oraz dopuszczalna prędkość maksymalna.
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=\textwidth]{img/sim-map.jpg}
     	\caption{Animowana mapa symulacji.}
@@ -181,7 +182,7 @@
     \subsection{Automat komórkowy}
     Automat zdefiniowany jako \texttt{Cellular} w module \texttt{core} odpowiada za budowę mapy bazując na obiekcie \texttt{SimpleMap}. Generuje on siatkę odpowiednio połączonych komórek, tworzy przeciwny, przesunięty pas ruchu, oznacza początek i koniec drogi (od wjazdu do zjazdu) i rozwiązuje połączenia komórek między odcinkami.
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=\textwidth]{img/note-map-zoom.png}
     	\caption{Zbliżenie na komórki mapy.}
@@ -212,13 +213,13 @@
     
     Stworzyliśmy też trzy predefiniowane klasy do szybkiego rysowania podstawowych statystyk: AgentMetrics, FlowMetrics oraz CellularMap do rysowania aktualnej mapy.
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=\textwidth]{img/sim-agents.jpg}
     	\caption{AgentMetrics: Wykres na podstawie wybranych danych zebranych przez AgentStat.}
     \end{figure}
     
-    \begin{figure}[h]
+    \begin{figure}[H]
     	\centering
     	\includegraphics[width=\textwidth]{img/note-custom.png}
     	\caption{Przykładowy wykres zdefiniowany przy użyciu pola \texttt{fields}. Kod dostępny w notebooku.}
@@ -243,11 +244,74 @@
     
     Symulację można powtórzyć samodzielnie za pomocą jupyter notebook \texttt{automata.ipynb} z możliwością modyfikacji parametrów.
     
+    Domyślne parametry definiują intensywny ruch drogowy (średnio 48 samochodów na minutę wjeżdża z każdego wjazdu).
+    
+    Każdy wariant był symulowany przez 500 sekund, a symulacja nie była resetowana. Oznacza to, że każdy wariant był budowany na poprzednim.
+    \begin{enumerate}
+    	\item wariant ruchu normalnego (iteracje: do 500),
+    	\item wariant ruchu z utrudnieniem w postaci zwężenia (iteracje: od 500 do 1000),
+    	\item wariant ruchu z całkowitą blokadą drogi (iteracje: od 1000 do 1500).
+    \end{enumerate}
+    
     \subsection{Ruch normalny}
+    W przypadku ruchu bez utrudnień widać, że największe zagęszczenie pojazdów jest na południowo-zachodniej części obwodnicy, a najmniejsze na północno-wschodniej.
+    
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[height=0.4\textheight,width=\linewidth]{img/note-sim.png}
+    	\caption{Ruch bez utrudnień.}
+    \end{figure}
+    
     \subsection{Zwężenie}
+    Po zwężeniu na odcinku Bielany-Balice i ograniczeniu prędkości, szybko powstaje korek, co widać no rysunku.
+    utrudnienie wpływa na ruch przed zwężeniem, zatrzymując pojazdy długo przed ograniczeniem szerokości drogi.
+    
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[width=0.65\linewidth,height=0.3\textheight]{img/note-sim-restriction.png}
+    	\includegraphics[width=0.34\linewidth,height=0.3\textheight]{img/note-sim-restriction-zoom.png}
+    	\caption{Ruch po zwężeniu na odcinku Bielany-Balice.}
+    \end{figure}
+    
     \subsection{Blokada}
+    Stworzenie blokady spowodowało stworzenie długiej kolumny pojazdów nie mogących się ruszyć.
+    
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[width=\linewidth,height=0.4\textheight]{img/note-sim-blocked.png}
+    	\caption{Blokada drogi na odcinku Bieżanów-Przewóz.}
+    \end{figure}
+    
     \subsection{Statystyki}
+    Uzyskane statystyki wskazują na zmniejszanie się średniej prędkości pojazdów, im więcej pojazdów znajduje się na obwodnicy. Początkowo samochody poruszały się najszybciej, kiedy na drodze nie było utrudnień i było ich najmniej.
+    
+    Efekty zwężenia i blokady na pewno zmniejszyły średnią prędkość znacznie. Nie widać tego jako skok, ale płynne zmniejszenie się wartości, co oznacza, że efekty utrudnień ruchu są widoczne dopiero po upływie pewnego czasu.
+    
+    Przepływ na węźle Przewóz uległ wyraźnemu pogroszeniu po zablokowaniu drogi.
+    
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[width=\linewidth]{img/note-agents.png}
+    	\caption{Statystyki pojazdów po symulacji wszystkich wariantów.}
+    \end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\linewidth]{img/note-inout.png}
+		\caption{Sumaryczny przepływ.}
+	\end{figure}
+    
     \subsection{Wydajność}
+    Wydajność naszego algorytmu zmierzyliśmy w zależności od czasu symulacji i gęstości komórek, czyli parametru RADIUS definiującego odległość między komórkami.
+    
+    Uzyskane wyniki wskazują na zależność bliską liniowej dla wybranej liczby iteracji, natomiast eksponencjalnie rośnie złożoność w przypadku zwiększenia gęstości komórek.
+    
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[width=0.49\textwidth]{img/perf.png}
+    	\includegraphics[width=0.49\textwidth]{img/perf-vs-radius.png}
+    	\caption{Wykresy czasów obliczeń w stosunku do parametrów symulacji. Skala logarytmiczna na wykresie z prawej.}
+    \end{figure}
 		
     \section{Od autorów}
     % Nasze przemyślenia o projekcie, napotkane trudności
@@ -255,7 +319,7 @@
     
     W czasie pracy napotkaliśmy duże trudności w implementacji mapy. Chcieliśmy wykorzystać istniejące, dostępne mapy, co okazało się być bardzo trudne w implementacji. Straciliśmy kilka tygodni tylko na szukanie rozwiązań umożliwiających wykorzystanie tego formatu. Ostatecznie stworzyliśmy własny, prosty format mapy, który przygotowaliśmy ręcznie na podstawie uzyskanych już wcześniej danych na temat obwodnicy.
     
-    Początkowo podczas projektu stosowana była metodologia Test Driven Development (TDD), jednak tylko do czasu prac nad OpenStreetMap, z którego zrezygnowaliśmy. Ograniczenia czasowe zmusiły nas do zrezygnowania z metody, aby ograniczyć ilość pisanego kodu. Mimo to, uważamy, że wygodnie pracuje się w ten sposób i ma on potencjał do zastosowania w przyszłych projektach.
+    Początkowo podczas projektu stosowana była metodologia Test Driven Development (TDD), jednak tylko do czasu prac nad OpenStreetMap, z którego zrezygnowaliśmy. Ograniczenia czasowe zmusiły nas do zrezygnowania z metody, aby ograniczyć ilość pisanego kodu. Mimo to, uważamy, że skutecznie pracuje się w ten sposób i ma on potencjał do zastosowania w przyszłych projektach.
 
     \section{Dalsza praca}
     % Uproszczenia i części wymagające ulepszeń lub optymalizacji
@@ -270,6 +334,12 @@
     \end{itemize}
 
 	Obsługa całej platformy może zostać zawarta w wygodnej dla użytkownika oprawie graficznej, np. \texttt{kivy}. Na chwilę obecną najbardziej interaktywny interfejs uzyskujemy poprzez \texttt{jupyter notebook}, który ma duże ograniczenia wydajności.
+	
+	\begin{figure}[p]
+		\centering
+		\includegraphics[width=\linewidth]{img/note-inout-crossing.jpg}
+		\caption{Przepływ w zależności od skrzyżowania.}
+	\end{figure}
 
 	\pagebreak
 	\begin{thebibliography}{15}
